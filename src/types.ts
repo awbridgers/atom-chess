@@ -18,11 +18,4 @@ export type Variation = {
   score: string
 }
 
-export type MoveHistory = {
-  from: Square | null,
-  to: Square | null,
-  color: Color | null,
-  fen: string
-  san: string;
-  variation: MoveHistory[]
-}
+export type MoveHistory  = (Move & {comments : string[]})
