@@ -1,5 +1,5 @@
 import {Move} from 'chess.js';
-import {ReactElement, useEffect, useMemo} from 'react';
+import {ReactElement, useEffect, useMemo, useRef} from 'react';
 import Scrollbars from 'react-custom-scrollbars-2';
 import {MoveHistory} from 'src/types';
 import styled from 'styled-components';
@@ -11,11 +11,17 @@ type Props = {
 };
 
 const Moves = ({moveList, currentMove, jump}: Props) => {
+  useEffect(() => {
+    if (focusRef.current) {
+      focusRef.current.scrollIntoView();
+    }
+  }, [currentMove]);
+  const focusRef = useRef<HTMLDivElement>(null);
   const data = useMemo(() => {
-    let res: ReactElement[] = [];
+    const res: ReactElement[] = [];
     for (let i = 0; i < moveList.length; i += 2) {
       res.push(
-        <Line key={i}>
+        <Line key={i} ref={Math.floor(currentMove / 2) === i ? focusRef : null}>
           <MoveNumber>{Math.floor(i / 2) + 1}</MoveNumber>
           <HalfMove $highlighted={i === currentMove} onClick={() => jump(i)}>
             {moveList[i].san}
@@ -32,10 +38,26 @@ const Moves = ({moveList, currentMove, jump}: Props) => {
       );
     }
     return res;
-  }, [moveList, currentMove]);
+  }, [moveList, currentMove, jump]);
   return (
     <Container>
-      <Scrollbars>{data}</Scrollbars>
+      <Scrollbars
+        renderView={(props) => (
+          <div
+            {...props}
+            style={{
+              position: 'absolute',
+              inset: '0px',
+              overflowY: 'scroll',
+              marginRight: '-17px',
+              marginBottom: '-17px',
+              paddingTop: '10px'
+            }}
+          />
+        )}
+      >
+        {data}
+      </Scrollbars>
     </Container>
   );
 };
@@ -46,6 +68,7 @@ const Container = styled.div`
   background-color: #1b1b1b;
   flex-flow: column;
   width: 100%;
+  overflow-x: hidden;
 `;
 const Line = styled.div`
   display: flex;
@@ -54,6 +77,7 @@ const Line = styled.div`
   align-items: center;
   width: 100%;
   color: white;
+  overflow-x: hidden;
 `;
 const HalfMove = styled.div<{$highlighted: boolean}>`
   display: flex;

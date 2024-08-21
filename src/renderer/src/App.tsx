@@ -55,7 +55,7 @@ function App(): JSX.Element {
       setHighlightedSquares((prev) => new Set(prev).add(id));
     }
   };
-  const handleSelect = (id) => {
+  const handleSelect = (id:Square) => {
     const squareInfo = chess.current.get(id);
     if (!selectedSquare) {
       //this is the first click
@@ -281,7 +281,7 @@ function App(): JSX.Element {
     };
   }, []);
   useEffect(() => {
-    console.log(history, historyIndex);
+    //console.log(history, historyIndex);
   }, [history, historyIndex]);
   return (
     <Container>
