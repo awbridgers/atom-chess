@@ -6,24 +6,38 @@ import styled from 'styled-components';
 
 type Props = {
   moveList: MoveHistory[];
-  currentMove: number
+  currentMove: number;
+  jump: (index) => void;
 };
 
-const Moves = ({moveList, currentMove}: Props) => {
+const Moves = ({moveList, currentMove, jump}: Props) => {
   const data = useMemo(() => {
     let res: ReactElement[] = [];
     for (let i = 0; i < moveList.length; i += 2) {
       res.push(
         <Line key={i}>
           <MoveNumber>{Math.floor(i / 2) + 1}</MoveNumber>
-          <HalfMove $highlighted = {i === currentMove}>{moveList[i].san}</HalfMove>
-          <HalfMove $highlighted = {i+1 === currentMove}>{moveList[i + 1] && moveList[i + 1].san}</HalfMove>
+          <HalfMove $highlighted={i === currentMove} onClick={() => jump(i)}>
+            {moveList[i].san}
+          </HalfMove>
+          {moveList[i + 1] && (
+            <HalfMove
+              $highlighted={i + 1 === currentMove}
+              onClick={() => jump(i + 1)}
+            >
+              {moveList[i + 1].san}
+            </HalfMove>
+          )}
         </Line>
       );
     }
     return res;
   }, [moveList, currentMove]);
-  return <Container><Scrollbars>{data}</Scrollbars></Container>;
+  return (
+    <Container>
+      <Scrollbars>{data}</Scrollbars>
+    </Container>
+  );
 };
 
 const Container = styled.div`
@@ -40,7 +54,6 @@ const Line = styled.div`
   align-items: center;
   width: 100%;
   color: white;
-
 `;
 const HalfMove = styled.div<{$highlighted: boolean}>`
   display: flex;
@@ -48,9 +61,9 @@ const HalfMove = styled.div<{$highlighted: boolean}>`
   flex: 1;
   font-size: 24px;
   margin: 0px 5px;
-  background-color: ${(props)=>props.$highlighted ? '#529aff4d' : 'none'};
+  background-color: ${(props) => (props.$highlighted ? '#529aff4d' : 'none')};
   cursor: pointer;
-  &:hover{
+  &:hover {
     background-color: #529affc9;
   }
 `;
@@ -61,7 +74,6 @@ const MoveNumber = styled.div`
   justify-content: center;
   font-size: 16px;
   background-color: #303030;
-  
 `;
 
 export default Moves;

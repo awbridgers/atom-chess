@@ -1,5 +1,5 @@
 import {Chess, Color, Move, PieceSymbol, Square} from 'chess.js';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import Board from './components/Board';
 import {EvalResults, MoveHistory, PieceInfo, Variation} from '../../types';
 import styled from 'styled-components';
@@ -116,21 +116,13 @@ function App(): JSX.Element {
   ) => {
     const move = chess.current.move({from: from, to: to, promotion: promo});
     //replace moves if this is not the last move in the history
-    const forHistory = {
-      from: move.from,
-      to: move.to,
-      fen: chess.current.fen(),
-      color: move.color,
-      san: move.san,
-      variation: [],
-    };
     const newIndex = historyIndex + 1;
     let newHistory = [...history];
     if (newIndex !== history.length) {
       //we need to replace the history after this move
       newHistory = newHistory.slice(0, newIndex);
     }
-    newHistory.push(forHistory);
+    newHistory.push({...move, comments: []});
     setHistory(newHistory);
     setHistoryIndex(newIndex);
     setSelectedSquare(null);
@@ -170,16 +162,27 @@ function App(): JSX.Element {
   const flipBoard = () => {
     setFlippedBoard(!flippedBoard);
   };
+  const jump = useCallback((index: number) => {
+    const {after, to, from} =
+      index >= 0
+        ? history[index]
+        : {after: startPos.current, to: null, from: null};
+    chess.current.load(after);
+    setHistoryIndex(index);
+    setBoard(chess.current.board());
+    setMoveSquare({to, from});
+    setSelectedSquare(null);
+    setLegalMoves(new Map());
+  },[history]);
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
-  const loadPosition = (pos: string,type: 'fen'|'pgn') => {
-    if(type === 'pgn'){
-      try{
+  const loadPosition = (pos: string, type: 'fen' | 'pgn') => {
+    if (type === 'pgn') {
+      try {
         chess.current.loadPgn(pos);
-
-      }catch(e){
-        console.log(e)
+      } catch (e) {
+        console.log(e);
       }
     }
   };
@@ -256,30 +259,10 @@ function App(): JSX.Element {
   }, []);
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        if (historyIndex >= 0) {
-          //move back 1 spot in the history
-          const newIndex = historyIndex - 1;
-          const {fen, to, from} =
-            historyIndex > 0
-              ? history[newIndex]
-              : {fen: startPos.current, to: null, from: null};
-          chess.current.load(fen);
-          setHistoryIndex((prev) => prev - 1);
-          setBoard(chess.current.board());
-          setMoveSquare({to, from});
-          setSelectedSquare(null);
-          setLegalMoves(new Map());
-        }
-      } else if (e.key === 'ArrowRight') {
-        if (historyIndex < history.length - 1) {
-          const newIndex = historyIndex + 1;
-          chess.current.load(history[newIndex].fen);
-          setHistoryIndex(newIndex);
-          setBoard(chess.current.board());
-          setSelectedSquare(null);
-          setLegalMoves(new Map());
-        }
+      if (e.key === 'ArrowLeft' && historyIndex >= 0) {
+        jump(historyIndex - 1);
+      } else if (e.key === 'ArrowRight' && historyIndex < history.length - 1) {
+        jump(historyIndex + 1);
       }
     };
     //set up listeners for arrow keys down
@@ -287,7 +270,7 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener('keydown', keyDownHandler);
     };
-  }, [historyIndex, history]);
+  }, [historyIndex, history, jump]);
   useEffect(() => {
     //set up listeners for arrow keys up
     //this is so when the users hold down the arrow key
@@ -298,18 +281,15 @@ function App(): JSX.Element {
     };
   }, []);
   useEffect(() => {
-    //console.log(bestMoves, variations)
-  }, [bestMoves, variations]);
+    console.log(history, historyIndex);
+  }, [history, historyIndex]);
   return (
     <Container>
       <EvalBar height={480} score={evaluation} />
       <BoardContainer>
         {showSetup && (
           <LoadDiv>
-            <LoadPos
-              load={loadPosition}
-              cancel={() => setShowSetup(false)}
-            />
+            <LoadPos load={loadPosition} cancel={() => setShowSetup(false)} />
           </LoadDiv>
         )}
         <Board
@@ -335,7 +315,7 @@ function App(): JSX.Element {
           variations={variations}
           flipped={flippedBoard}
         />
-        <Moves currentMove={historyIndex} moveList={history} />
+        <Moves currentMove={historyIndex} moveList={history} jump={jump} />
         <Menu
           flipBoard={flipBoard}
           setupGame={() => setShowSetup(true)}
