@@ -55,7 +55,7 @@ function App(): JSX.Element {
       setHighlightedSquares((prev) => new Set(prev).add(id));
     }
   };
-  const handleSelect = (id:Square) => {
+  const handleSelect = (id: Square) => {
     const squareInfo = chess.current.get(id);
     if (!selectedSquare) {
       //this is the first click
@@ -122,7 +122,7 @@ function App(): JSX.Element {
       //we need to replace the history after this move
       newHistory = newHistory.slice(0, newIndex);
     }
-    newHistory.push({...move, comments: []});
+    newHistory.push({...move, comments: ''});
     setHistory(newHistory);
     setHistoryIndex(newIndex);
     setSelectedSquare(null);
@@ -162,18 +162,43 @@ function App(): JSX.Element {
   const flipBoard = () => {
     setFlippedBoard(!flippedBoard);
   };
-  const jump = useCallback((index: number) => {
-    const {after, to, from} =
-      index >= 0
-        ? history[index]
-        : {after: startPos.current, to: null, from: null};
-    chess.current.load(after);
-    setHistoryIndex(index);
-    setBoard(chess.current.board());
-    setMoveSquare({to, from});
-    setSelectedSquare(null);
-    setLegalMoves(new Map());
-  },[history]);
+  const addComment = (index: number, newComment: string) => {
+    console.log(index);
+    const fen = history[index].after;
+    setHistory((prev) =>
+      prev.map((move, i) =>
+        i === index ? {...move, comments: newComment} : move
+      )
+    );
+    chess.current.setComment(newComment, fen);
+  };
+  const deleteComment = (index: number) => {
+    const fen = history[index].after;
+    chess.current.deleteComment(fen);
+    setHistory((prev) =>
+      prev.map((move, i) =>
+        index === i ? {...move, comments: undefined} : move
+      )
+    );
+  };
+  const jump = useCallback(
+    (index: number, getEval: boolean) => {
+      const {after, to, from} =
+        index >= 0
+          ? history[index]
+          : {after: startPos.current, to: null, from: null};
+      chess.current.load(after);
+      setHistoryIndex(index);
+      setBoard(chess.current.board());
+      setMoveSquare({to, from});
+      setSelectedSquare(null);
+      setLegalMoves(new Map());
+      if (getEval) {
+        window.api.getEval(chess.current.fen(), chess.current.turn());
+      }
+    },
+    [history]
+  );
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
@@ -181,6 +206,35 @@ function App(): JSX.Element {
     if (type === 'pgn') {
       try {
         chess.current.loadPgn(pos);
+        console.log(chess.current.pgn());
+        const newHistory: MoveHistory[] = chess.current.history({
+          verbose: true,
+        });
+        const comments = [...chess.current.getComments()];
+        console.log(comments);
+        //attach comments to the move in the history
+        for (
+          let i = newHistory.length - 1;
+          i >= 0 && comments.length > 0;
+          i--
+        ) {
+          if (newHistory[i].after === comments[comments.length - 1].fen) {
+            newHistory[i].comments = comments.pop()!.comment;
+          }
+        }
+        setHistoryIndex(newHistory.length - 1);
+        setHistory(newHistory);
+        setSelectedSquare(null);
+        setLegalMoves(new Map());
+        setBoard(chess.current.board());
+        setMoveSquare({
+          to: newHistory[newHistory.length - 1].to,
+          from: newHistory[newHistory.length - 1].from,
+        });
+        setPromoInfo(null);
+        setBestMoves(new Map());
+        setShowSetup(false);
+        window.api.getEval(chess.current.fen(), chess.current.turn());
       } catch (e) {
         console.log(e);
       }
@@ -260,9 +314,9 @@ function App(): JSX.Element {
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' && historyIndex >= 0) {
-        jump(historyIndex - 1);
+        jump(historyIndex - 1, false);
       } else if (e.key === 'ArrowRight' && historyIndex < history.length - 1) {
-        jump(historyIndex + 1);
+        jump(historyIndex + 1, false);
       }
     };
     //set up listeners for arrow keys down
@@ -315,7 +369,13 @@ function App(): JSX.Element {
           variations={variations}
           flipped={flippedBoard}
         />
-        <Moves currentMove={historyIndex} moveList={history} jump={jump} />
+        <Moves
+          currentMove={historyIndex}
+          moveList={history}
+          jump={jump}
+          addComment={addComment}
+          deleteComment={deleteComment}
+        />
         <Menu
           flipBoard={flipBoard}
           setupGame={() => setShowSetup(true)}

@@ -34,6 +34,7 @@ const Menu = ({flipBoard, setupGame, showArrows, toggleShowArrows}: Props) => {
 const Container = styled.div`
   display: flex;
   flex-flow: row nowrap;
+  background-color: #454545;
 `;
 const Button = styled.button`
   cursor: pointer;

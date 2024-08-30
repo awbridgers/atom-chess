@@ -23,7 +23,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
-    "chess.js": "^1.0.0-beta.8",
+    "chess.js": "https://github.com/awbridgers/chess.js.git#addCommentAtFEN",
     "react-archer": "^4.4.0",
     "react-custom-scrollbars-2": "^4.5.0",
     "react-icons": "^5.2.1",

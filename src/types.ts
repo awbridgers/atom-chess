@@ -18,4 +18,4 @@ export type Variation = {
   score: string
 }
 
-export type MoveHistory  = (Move & {comments : string[]})
+export type MoveHistory  = (Move & {comments? : string})
