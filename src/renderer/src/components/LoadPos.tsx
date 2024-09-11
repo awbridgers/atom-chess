@@ -11,9 +11,9 @@ const LoadPos = ({load,cancel}: Props) => {
   const [pgn, setPgn] = useState<string>('');
   const loadPosition = ()=>{
     if(pgn){
-      //
-    }else{
-      //
+      load(pgn, 'pgn')
+    }else if(fen){
+      load(fen, 'fen')
     }
   }
   return (
@@ -30,7 +30,7 @@ const LoadPos = ({load,cancel}: Props) => {
         onChange={(e) => setPgn(e.target.value)}
       />
       <ButtonContainer>
-      <Button>Load Position</Button>
+      <Button onClick = {loadPosition}>Load Position</Button>
       <Button onClick = {cancel}>Cancel</Button>
       </ButtonContainer>
     </Container>
