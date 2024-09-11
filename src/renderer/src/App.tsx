@@ -224,21 +224,36 @@ function App(): JSX.Element {
         }
         setHistoryIndex(newHistory.length - 1);
         setHistory(newHistory);
-        setSelectedSquare(null);
-        setLegalMoves(new Map());
-        setBoard(chess.current.board());
+
         setMoveSquare({
           to: newHistory[newHistory.length - 1].to,
           from: newHistory[newHistory.length - 1].from,
         });
-        setPromoInfo(null);
-        setBestMoves(new Map());
-        setShowSetup(false);
+
         window.api.getEval(chess.current.fen(), chess.current.turn());
       } catch (e) {
         console.log(e);
       }
+    } else {
+      //fen
+      try {
+        chess.current.load(pos);
+        setHistory([]);
+        setHistoryIndex(-1);
+        setMoveSquare({to: null, from: null})
+        startPos.current = chess.current.fen();
+      } catch (e) {
+        console.log(e);
+      }
     }
+    window.api.getEval(chess.current.fen(), chess.current.turn());
+    setPromoInfo(null);
+    setBestMoves(new Map());
+    setShowSetup(false);
+    setSelectedSquare(null);
+    setLegalMoves(new Map());
+    setHighlightedSquares(new Set())
+    setBoard(chess.current.board());
   };
 
   //engine listener

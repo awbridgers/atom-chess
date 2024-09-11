@@ -11,6 +11,7 @@ type Props = {
   jump: (index: number, getEval: boolean) => void;
   addComment: (index:number, comment:string) => void;
   deleteComment: (index: number) =>void;
+  blackFirst? : boolean
 };
 
 const Moves = ({moveList, currentMove, jump, addComment, deleteComment}: Props) => {
@@ -30,13 +31,15 @@ const Moves = ({moveList, currentMove, jump, addComment, deleteComment}: Props) 
   }, [menuIndex, moveList]);
   const data = useMemo(() => {
     const res: ReactElement[] = [];
-    for (let i = 0; i < moveList.length; i += 2) {
+    const blackFirst = moveList.length && moveList[0].color === 'b';
+    for (let i = blackFirst ? -1: 0; i < moveList.length; i += 2) {
       res.push(
         <Line
           key={i}
           ref={currentMove === i || currentMove === i + 1 ? focusRef : null}
         >
           <MoveNumber>{Math.floor(i / 2) + 1}</MoveNumber>
+          {i>=0 ?
           <HalfMove onContextMenu={() => setmenuIndex(i)}>
             {menuIndex === i && (
               <ContextMenu items={menuButtons} exit={() => setmenuIndex(-1)} />
@@ -45,8 +48,11 @@ const Moves = ({moveList, currentMove, jump, addComment, deleteComment}: Props) 
               {moveList[i].san}
             </San>
             {moveList[i].comments && <Comment>{moveList[i].comments}</Comment>}
+          </HalfMove> :
+          <HalfMove>
+            <San $highlighted = {false}>...</San>
           </HalfMove>
-
+    }
           {moveList[i + 1] && (
             <HalfMove onContextMenu={() => setmenuIndex(i + 1)}>
               {menuIndex === i + 1 && (
