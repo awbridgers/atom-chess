@@ -4,7 +4,7 @@ import {electronApp, optimizer, is} from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 const stockfish = require('stockfish.wasm');
 
-global.engineQueue = [];
+global.nextPos = null;
 global.engineWorking = false;
 global.color = 'w';
 
@@ -92,9 +92,11 @@ app.whenReady().then(() => {
         });
         mainWindow.webContents.send('evalResults', data);
         global.engineWorking = false;
-        if (global.engineQueue.length) {
-          const [nextPos, nextColor] = global.engineQueue.shift();
+        if (global.nextPos) {
+          const nextPos = global.nextPos.pos;
+          const nextColor = global.nextPos.color;
           getEval(nextPos, nextColor);
+          global.nextPos = null;
         }
       } else {
         res.push(line);
@@ -125,7 +127,7 @@ app.on('window-all-closed', () => {
 // code. You can also put them in separate files and require them here.
 ipcMain.on('getEval', (_, pos: string, color: 'w' | 'b') => {
   if (global.engineWorking) {
-    global.engineQueue.push([pos, color]);
+    global.nextPos = {pos, color}
   } else {
     getEval(pos, color);
   }

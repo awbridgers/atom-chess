@@ -224,13 +224,11 @@ function App(): JSX.Element {
         }
         setHistoryIndex(newHistory.length - 1);
         setHistory(newHistory);
-
         setMoveSquare({
           to: newHistory[newHistory.length - 1].to,
           from: newHistory[newHistory.length - 1].from,
         });
 
-        window.api.getEval(chess.current.fen(), chess.current.turn());
       } catch (e) {
         console.log(e);
       }
