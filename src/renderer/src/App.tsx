@@ -8,6 +8,7 @@ import Engine from './components/Engine';
 import Moves from './components/Moves';
 import LoadPos from './components/LoadPos';
 import Menu from './components/Menu';
+import { useSquareSize } from './hooks/useSquareSize';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
@@ -44,6 +45,7 @@ function App(): JSX.Element {
   } | null>(null);
   const [showArrows, setShowArrows] = useState<boolean>(true);
   const [showSetup, setShowSetup] = useState<boolean>(false);
+  const squareSize = useSquareSize();
   const handleRightClick = (id) => {
     if (highlightedSquares.has(id)) {
       setHighlightedSquares((prev) => {
@@ -352,7 +354,7 @@ function App(): JSX.Element {
   }, [history, historyIndex]);
   return (
     <Container>
-      <EvalBar height={480} score={evaluation} />
+      <EvalBar height={squareSize*8} score={evaluation} />
       <BoardContainer>
         {showSetup && (
           <LoadDiv>
@@ -360,7 +362,7 @@ function App(): JSX.Element {
           </LoadDiv>
         )}
         <Board
-          squareHeight={60}
+          squareHeight={squareSize}
           onClickSquare={handleSelect}
           board={board}
           selectedSquare={selectedSquare}
@@ -376,7 +378,7 @@ function App(): JSX.Element {
           showArrows={showArrows}
         />
       </BoardContainer>
-      <GameInfo>
+      <GameInfo $height = {squareSize*8}>
         <Engine
           value={evalText}
           variations={variations}
@@ -404,14 +406,15 @@ const Container = styled.div`
   align-items: flex-start;
   justify-content: center;
   background-color: #000000;
+  min-width: 650px;
 `;
 
-const GameInfo = styled.div`
+const GameInfo = styled.div<{$height: number}>`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   background-color: blue;
-  height: 480px;
+  height: ${(props)=>props.$height}px;
   width: 300px;
 `;
 const BoardContainer = styled.div`
