@@ -1,12 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { Color } from 'chess.js'
+import { Game } from '../types'
 
 // Custom APIs for renderer
 const api = {
   getEval: (pos: string, color: Color)=>ipcRenderer.send('getEval', pos, color),
   onEvalResults: (callback)=>ipcRenderer.on('evalResults', (_, data)=>{callback(data)}),
-  removeEvalListener: ()=>ipcRenderer.removeListener('evalResults',()=> console.log('listener removed'))
+  removeEvalListener: ()=>ipcRenderer.removeListener('evalResults',()=> console.log('listener removed')),
+  saveList: (data: Game[])=>ipcRenderer.invoke('saveList', data),
+  loadList: (name: string)=>ipcRenderer.invoke('loadList', name)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

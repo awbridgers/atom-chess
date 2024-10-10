@@ -1,14 +1,37 @@
 import styled from 'styled-components';
-import {FaRetweet, FaPlus, FaDatabase, FaArrowCircleUp} from 'react-icons/fa';
+import {
+  FaRetweet,
+  FaPlus,
+  FaDatabase,
+  FaArrowCircleUp,
+  FaSave,
+  FaInfoCircle,
+} from 'react-icons/fa';
+import {useState} from 'react';
+import Alert from './Alert';
+import { FaFolder, FaFolderOpen } from 'react-icons/fa6';
 
 type Props = {
   flipBoard: () => void;
   setupGame: () => void;
   showArrows: boolean;
   toggleShowArrows: () => void;
+  saveGame: () => void;
+  showGameList: ()=>void;
+  showGameInfo: ()=>void;
 };
 
-const Menu = ({flipBoard, setupGame, showArrows, toggleShowArrows}: Props) => {
+const Menu = ({
+  flipBoard,
+  setupGame,
+  showArrows,
+  toggleShowArrows,
+  saveGame,
+  showGameList,
+  showGameInfo
+}: Props) => {
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+
   return (
     <Container>
       <Button title="Flip Board" onClick={flipBoard}>
@@ -17,15 +40,21 @@ const Menu = ({flipBoard, setupGame, showArrows, toggleShowArrows}: Props) => {
       <Button title="Setup Game" onClick={setupGame}>
         <FaPlus size={40} className="buttonIcon" />
       </Button>
-      <Button title="import Database">
-        <FaDatabase size={40} className="buttonIcon" />
+      <Button title="View Game List" onClick={showGameList}>
+        <FaFolderOpen size={40} className="buttonIcon" />
       </Button>
-      <Button title="Toggle Arrows" onClick = {toggleShowArrows}>
+      <Button title="Save Game" onClick={saveGame}>
+        <FaSave size={40} className="buttonIcon" />
+      </Button>
+      <Button title="Toggle Arrows" onClick={toggleShowArrows}>
         <FaArrowCircleUp
           size={40}
           className="buttonIcon"
           style={{color: showArrows ? 'green' : '#a3a3a3'}}
         />
+      </Button>
+      <Button title="Game Info" onClick={showGameInfo}>
+        <FaInfoCircle size={35} className="buttonIcon" />
       </Button>
     </Container>
   );
@@ -35,6 +64,7 @@ const Container = styled.div`
   display: flex;
   flex-flow: row nowrap;
   background-color: #454545;
+  justify-content: space-around;
 `;
 const Button = styled.button`
   cursor: pointer;

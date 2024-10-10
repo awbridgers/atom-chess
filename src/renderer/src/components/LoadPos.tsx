@@ -30,6 +30,7 @@ const LoadPos = ({load,cancel}: Props) => {
         onChange={(e) => setPgn(e.target.value)}
       />
       <ButtonContainer>
+      <Button onClick={()=>load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 'fen')}>New Game</Button>
       <Button onClick = {loadPosition}>Load Position</Button>
       <Button onClick = {cancel}>Cancel</Button>
       </ButtonContainer>

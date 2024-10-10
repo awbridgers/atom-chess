@@ -17,5 +17,5 @@ export const useSquareSize = () => {
     return ()=>window.removeEventListener('resize', handleResize)
   },[]);
 
-  return Math.max(Math.min(screenSize.width/15, screenSize.height/8), 40)
+  return Math.max(Math.min(screenSize.width/17, screenSize.height/10), 60)
 };

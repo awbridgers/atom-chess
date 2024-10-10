@@ -19,3 +19,24 @@ export type Variation = {
 }
 
 export type MoveHistory  = (Move & {comments? : string})
+export type ResultType = '1-0'|'0-1'|'1/2-1/2'|'*'
+
+export type Game = {
+    black: string;
+    white: string;
+    result: ResultType;
+    pgn: string;
+    key: string;
+    date: Date;
+    dateAdded: Date;
+  }
+export type GameDetails = {
+  'White': string;
+  'WhiteElo': string;
+  'Black': string;
+  'BlackElo': string;
+  'Result': ResultType;
+  'Date': string;
+  'Event': string;
+  additional: string;
+}

@@ -8,6 +8,10 @@ import {ArcherContainer, ArcherContainerRef, ArcherElement} from 'react-archer';
 
 type Props = {
   board: (PieceInfo | null)[][];
+  white?: string;
+  black?: string;
+  whiteElo?: string;
+  blackElo?: string;
   onClickSquare?: (id: Square) => void;
   selectedSquare?: Square | null;
   highlightedSquares?: Set<Square>;
@@ -18,7 +22,7 @@ type Props = {
   prevMove?: {to: Square | null; from: Square | null};
   promoInfo?: {to: Square; from: Square; color: Color} | null;
   flipped: boolean;
-  showArrows?: boolean
+  showArrows?: boolean;
   cancelPromo?: () => void;
   promote?: (
     from: Square,
@@ -43,7 +47,11 @@ const Board = ({
   cancelPromo,
   promote,
   bestMoves,
-  showArrows
+  showArrows,
+  white,
+  black,
+  whiteElo,
+  blackElo,
 }: Props) => {
   const getColor = (id) => {
     const rank = +id[1];
@@ -62,12 +70,17 @@ const Board = ({
   }, [board, flipped]);
   return (
     <Container>
+      {white && black && <GameInfo>
+        <NamesContainer style = {{width: squareHeight*8}}>
+          <Name>{white}</Name> ({whiteElo}) -- <Name>{black}</Name> ({blackElo})
+        </NamesContainer>
+      </GameInfo>}
       {promoInfo && cancelPromo && <PromoScreen onClick={cancelPromo} />}
       <ArcherContainer
         strokeColor="#4977f75d"
         strokeWidth={3}
         svgContainerStyle={{zIndex: 4}}
-        endShape={{arrow: {arrowLength:5, arrowThickness: 5}}}
+        endShape={{arrow: {arrowLength: 5, arrowThickness: 5}}}
       >
         {boardOrientation.map((row, i) => (
           <Row key={i}>
@@ -87,7 +100,6 @@ const Board = ({
                             targetId: x,
                             targetAnchor: 'middle',
                             sourceAnchor: 'middle',
-                            
                           };
                         })
                       : []
@@ -222,4 +234,22 @@ const PromoScreen = styled.div`
   right: 0px;
   z-index: 5;
   background-color: #00000066;
+`;
+const GameInfo = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+const NamesContainer = styled.div`
+  font-size: 20px;
+  align-self: center;
+  overflow: hidden;
+  color: white;
+  white-space: nowrap;
+  margin: auto;
+  text-align: center;
+`;
+const Name = styled.div`
+  font-weight: bold;
+  display: inline;
 `;
