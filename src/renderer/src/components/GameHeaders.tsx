@@ -1,6 +1,7 @@
 import {useSquareSize} from '@renderer/hooks/useSquareSize';
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import Scrollbars from 'react-custom-scrollbars-2';
+import {ResultType} from 'src/types';
 import styled from 'styled-components';
 
 type Props = {
@@ -8,7 +9,11 @@ type Props = {
   black: string;
   whiteElo: string;
   blackElo: string;
-  rest?: {[key: string]: string};
+  event: string;
+  result: ResultType;
+  date: string;
+
+  rest: [string,string][];
   close: () => void;
 };
 
@@ -18,32 +23,48 @@ const GameHeaders = ({
   whiteElo,
   blackElo,
   close,
+  result,
+  event,
   rest,
+  date
 }: Props) => {
   return (
     <Container>
       <h3>Game Info</h3>
-        <Scrollbars style = {{flex:1}}>
-          <Table>
-            <tbody>
-              <Row>
-                <Header>White:</Header>
-                <Info>{white} ({whiteElo})</Info>
-              </Row>
-              <Row>
-                <Header>Black:</Header>
-                <Info>{black} ({blackElo})</Info>
-              </Row>
-              {rest && Object.keys(rest).map((header,i)=>(
-                <Row key = {i}>
-                  <Header>{header}:</Header>
-                  <Info>{rest[header]}</Info>
-                </Row>
-            
-            ))}
-            </tbody>
-          </Table>
-        </Scrollbars>
+      <Scrollbars style={{flex: 1}}>
+        <Table>
+          <tbody>
+            <Row>
+              <Header>White:</Header>
+              <Info>
+                {white} ({whiteElo})
+              </Info>
+            </Row>
+            <Row>
+              <Header>Black:</Header>
+              <Info>
+                {black} ({blackElo})
+              </Info>
+            </Row>
+            <Row>
+              <Header>Result:</Header>
+              <Info>{result}</Info>
+            </Row>
+            <Row>
+              <Header>Date:</Header>
+              <Info>{date}</Info>
+            </Row>
+            <Row>
+              <Header>Event:</Header>
+              <Info>{event}</Info>
+            </Row>
+            {rest.map(([header, value],i)=><Row key = {i}>
+              <Header>{header}</Header>
+              <Info>{value}</Info>
+            </Row>)}
+          </tbody>
+        </Table>
+      </Scrollbars>
 
       <Button onClick={close}>Close</Button>
     </Container>
@@ -85,26 +106,23 @@ const ButtonContainer = styled.div`
   align-items: center;
 `;
 const Table = styled.table`
-width: 99%;
-margin: auto;
-`
-const Row = styled.tr`
-
-`
+  width: 99%;
+  margin: auto;
+`;
+const Row = styled.tr``;
 const Header = styled.td`
   font-size: 22px;
-
-`
+`;
 const Info = styled.td`
-font-size: 22px;
-padding: 10px;
-line-break: anywhere;
-`
+  font-size: 22px;
+  padding: 10px;
+  line-break: anywhere;
+`;
 const Body = styled.div`
   display: flex;
   justify-content: center;
   height: 400px;
-  flex:1;
+  flex: 1;
 `;
 
 const Button = styled.button<{$disabled?: boolean}>`

@@ -28,6 +28,17 @@ const numFormat = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
 });
 //const startPos = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const initGameInfo:GameDetails = {
+  white: 'White',
+  black: 'Black',
+  whiteElo: '0',
+  blackElo: '0',
+  result: '*',
+  date: '',
+  event: '',
+  additional: [],
+}
+
 
 function App(): JSX.Element {
   const chess = useRef(new Chess());
@@ -59,20 +70,14 @@ function App(): JSX.Element {
   const [showArrows, setShowArrows] = useState<boolean>(true);
   const [showSetup, setShowSetup] = useState<boolean>(false);
   const [gameList, setGameList] = useState<Game[]>([]);
-  const [whitePlayer, setWhitePlayer] = useState<string>('');
-  const [blackPlayer, setBlackPlayer] = useState<string>('');
-  const [whiteElo, setWhiteElo] = useState<string>('');
-  const [blackElo, setBlackElo] = useState<string>('');
-  const [date, setDate] = useState<string>('');
-  const [event, setEvent] = useState<string>('');
-  const [restInfo, setRestInfo] = useState<{[key: string]: string}>({});
-  const [result, setResult] = useState<ResultType>('*');
+  const [gameInfo, setGameInfo] = useState<GameDetails>({...initGameInfo, additional:[]});
   const [showGameList, setShowGameList] = useState<boolean>(false);
   const [playBackMode, setPlayBackMode] = useState<boolean>(false);
-  const [showGameInfo, setShowGameInfo] = useState<boolean>(true);
+  const [showGameInfo, setShowGameInfo] = useState<boolean>(false);
   const [showSaveAlert, setshowSaveAlert] = useState<boolean>(false);
   const squareSize = useSquareSize();
   const storedIndex = useRef<number | null>(null);
+  const gameKey = useRef<string|null>(null)
   const handleRightClick = (id) => {
     if (highlightedSquares.has(id)) {
       setHighlightedSquares((prev) => {
@@ -224,18 +229,23 @@ function App(): JSX.Element {
         setBestMoves(new Map());
         getEval = false;
       }
+      setBestMoves(new Map())
       setHistoryIndex(index);
       setBoard(chess.current.board());
       setMoveSquare({to, from});
       setSelectedSquare(null);
       setLegalMoves(new Map());
+      if(getEval){
+        window.api.getEval(chess.current.fen(), chess.current.turn());
+
+      }
     },
     [history]
   );
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
-  const loadPosition = (pos: string, type: 'fen' | 'pgn') => {
+  const loadPosition = (pos: string, type: 'fen' | 'pgn', key: string) => {
     if (type === 'pgn') {
       try {
         //load the game
@@ -256,23 +266,19 @@ function App(): JSX.Element {
           }
         }
         //get the headers
-        const {White, Black, WhiteElo, BlackElo, Date, Event, Result, additional} =
-          chess.current.header();
-          const arr = additional.split(',');
-          const rest = {}
-          while(arr.length > 1){
-            const value = arr.pop() || '';
-            const key = arr.pop() || ''
-            rest[key] = value;
-          }
-        setWhitePlayer(White || '');
-        setBlackPlayer(Black || '');
-        setWhiteElo(WhiteElo || '');
-        setBlackElo(BlackElo || '');
-        setRestInfo(rest);
-        setDate(Date || moment(new window.Date()).format('YYYY.mm.dd'));
-        setEvent(Event || '');
-        setResult((Result as ResultType) || '*');
+        const {White, Black, WhiteElo, BlackElo, Date, Event, Result, ...additional} = chess.current.header()
+        const newGameDetails: GameDetails = {
+          white: White || 'White',
+          black: Black || 'Black',
+          whiteElo: WhiteElo || '0',
+          blackElo: BlackElo || '0',
+          date: Date || '',
+          event: Event || '',
+          result: Result as ResultType || '*',
+          additional: Object.keys(additional).map(x=>[x, additional[x]]),
+        };
+        setGameInfo(newGameDetails);
+
         //set the history
         setHistoryIndex(newHistory.length - 1);
         setHistory(newHistory);
@@ -291,12 +297,16 @@ function App(): JSX.Element {
         setHistory([]);
         setHistoryIndex(-1);
         setMoveSquare({to: null, from: null});
+        setGameInfo({...initGameInfo, additional:[]})
         startPos.current = chess.current.fen();
+        gameKey.current = null;
         setPlayBackMode(false);
       } catch (e) {
         console.log(e);
       }
     }
+    if(key)gameKey.current = key;
+    else gameKey.current = null;
     window.api.getEval(chess.current.fen(), chess.current.turn());
     setPromoInfo(null);
     setBestMoves(new Map());
@@ -326,28 +336,33 @@ function App(): JSX.Element {
     //the complete pgn. This is because the chess object loses
     //track of the complete pgn when we jump around the history
     if (history.length >= 1) {
-      //don't save a game with no moves
       const chessGame = new Chess(startPos.current);
+      //add the comments to the pgn
       for (const {comments, ...move} of history) {
         chessGame.move(move);
         if (comments) chessGame.setComment(comments);
       }
-      Object.keys(gameInfo).forEach((key) => {
-        if (key === 'additional') {
-          chessGame.header(gameInfo.additional);
-        } else {
-          chessGame.header(key, gameInfo[key]);
+      //add the headers to the pgn
+      Object.keys(gameInfo).forEach((key)=>{
+        if(key === 'additional'){
+          for(const [key, value] of gameInfo.additional){
+            chessGame.header(key, value)
+          }
+        }else{
+          const newKey = key[0].toUpperCase() + key.slice(1);
+          chessGame.header(newKey, gameInfo[key])
         }
-      });
-      console.log(chessGame.header());
+      })
+      //
+      const dataKey = gameKey.current ? gameKey.current : uuidv6();
       const data: Game = {
-        white: gameInfo.White,
-        black: gameInfo.Black,
-        result: gameInfo.Result,
+        white: gameInfo.white,
+        black: gameInfo.black,
+        result: gameInfo.result,
         pgn: chessGame.pgn(),
-        date: new Date(gameInfo.Date),
+        date: new Date(gameInfo.date),
         dateAdded: new Date(),
-        key: uuidv6(),
+        key: dataKey
       };
       const load = await window.api.loadList('myGames');
       const oldList = load.data;
@@ -364,9 +379,11 @@ function App(): JSX.Element {
         console.log('save successful');
         await loadGames('myGames');
         setshowSaveAlert(false);
+        gameKey.current = data.key;
       }
     }
   };
+  
 
   //engine listener
   useEffect(() => {
@@ -496,7 +513,13 @@ function App(): JSX.Element {
     //this is so when the users hold down the arrow key
     //to skip back really far, we aren't evaluating every position skipped over
     const keyUpHandler = (e: KeyboardEvent) => {
-      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !showGameInfo && !showGameList && !showSaveAlert && !showSetup) {
+      if (
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+        !showGameInfo &&
+        !showGameList &&
+        !showSaveAlert &&
+        !showSetup
+      ) {
         // if (!chess.current.isCheckmate() && !chess.current.isDraw()) {
         window.api.getEval(chess.current.fen(), chess.current.turn());
         // } else {
@@ -527,7 +550,7 @@ function App(): JSX.Element {
             <GameList
               list={gameList}
               close={() => setShowGameList(false)}
-              open={(pgn: string) => loadPosition(pgn, 'pgn')}
+              open={(pos:string, key: string)=>loadPosition(pos, 'pgn', key)}
               deleteGame={deleteGame}
             />
           )}
@@ -538,11 +561,14 @@ function App(): JSX.Element {
           )}
           {showGameInfo && (
             <GameHeaders
-              white={whitePlayer || 'White'}
-              black={blackPlayer || 'Black'}
-              whiteElo={whiteElo || '0'}
-              blackElo={blackElo || '0'}
-              rest={restInfo}
+              white={gameInfo.white}
+              black={gameInfo.black}
+              whiteElo={gameInfo.whiteElo}
+              blackElo={gameInfo.blackElo}
+              rest={gameInfo.additional}
+              event={gameInfo.event}
+              date = {gameInfo.date}
+              result={gameInfo.result}
               close={() => setShowGameInfo(false)}
             ></GameHeaders>
           )}
@@ -550,16 +576,14 @@ function App(): JSX.Element {
             <Save
               accept={saveGame}
               cancel={() => setshowSaveAlert(false)}
-              white={whitePlayer || 'White'}
-              black={blackPlayer || 'Black'}
-              whiteElo={whiteElo || '0'}
-              blackElo={blackElo || '0'}
-              date={date}
-              event={event}
-              additional={Object.entries(restInfo)
-                .map((x) => x.join(','))
-                .join(',')}
-              result={result}
+              white={gameInfo.white}
+              black={gameInfo.black}
+              whiteElo={gameInfo.whiteElo}
+              blackElo={gameInfo.blackElo}
+              event={gameInfo.event}
+              date={gameInfo.date}
+              result={gameInfo.result}
+              additional={gameInfo.additional.flat().join(',')}
             />
           )}
           <Board
@@ -577,10 +601,10 @@ function App(): JSX.Element {
             promote={movePiece}
             bestMoves={bestMoves}
             showArrows={showArrows}
-            white={whitePlayer || 'White'}
-            black={blackPlayer || 'Black'}
-            whiteElo={whiteElo || '0'}
-            blackElo={blackElo || '0'}
+            white={gameInfo.white}
+            black={gameInfo.black}
+            whiteElo={gameInfo.whiteElo}
+            blackElo={gameInfo.blackElo}
           />
         </BoardContainer>
         <GameInfo $height={squareSize * 8}>

@@ -45,15 +45,22 @@ const Save = ({
     if (date.toString() === 'Invalid Date') {
       console.log('Date is not valid');
     } else {
+      const add: [string, string][] = [];
+      const temp = newAdditional.split(',');
+      if(temp.length % 2 === 1) temp.push(' ');
+      for(let i = 0; i<temp.length-1; i+=2){
+        add.push([temp[i], temp[i+1]])
+      }
+
       const details: GameDetails = {
-        White: newWhite,
-        Black: newBlack,
-        WhiteElo: newWhiteElo,
-        BlackElo: newBlackElo,
-        Result: newResult,
-        Date: newDate,
-        Event: newEvent,
-        additional: newAdditional,
+        white: newWhite,
+        black: newBlack,
+        whiteElo: newWhiteElo,
+        blackElo: newBlackElo,
+        result: newResult,
+        date: newDate,
+        event: newEvent,
+        additional: add,
       };
       accept(details);
     }
@@ -164,7 +171,7 @@ const Container = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  height: 80%;
+  height: 85%;
   background-color: #001b75;
   justify-content: space-around;
   z-index: 10;

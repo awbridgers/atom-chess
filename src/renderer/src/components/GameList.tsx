@@ -7,7 +7,7 @@ import Alert from './Alert';
 type Props = {
   list: Game[];
   close: () => void;
-  open: (key:string) => void;
+  open: (pos: string, key: string) => void;
   deleteGame: (key: string) => void;
 };
 
@@ -24,7 +24,7 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
   }
   const handleOpen = () =>{
     if(selected){
-      open(selected.pgn);
+      open(selected.pgn,selected.key);
     }
   }
   
@@ -37,6 +37,7 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
           body="Are you sure you want to remove this game from the list?"
           onAccept={handleDelete}
           onCancel={()=>setShowDeleteAlert(false)}
+          bgColor = {'green'}
         />
       )}
       <Body>

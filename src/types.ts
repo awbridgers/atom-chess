@@ -31,12 +31,12 @@ export type Game = {
     dateAdded: Date;
   }
 export type GameDetails = {
-  'White': string;
-  'WhiteElo': string;
-  'Black': string;
-  'BlackElo': string;
-  'Result': ResultType;
-  'Date': string;
-  'Event': string;
-  additional: string;
+  white: string;
+  whiteElo: string;
+  black: string;
+  blackElo: string;
+  result: ResultType;
+  date: string;
+  event: string;
+  additional: [string,string][];
 }
