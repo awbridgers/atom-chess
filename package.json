@@ -24,12 +24,15 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "chess.js": "https://github.com/awbridgers/chess.js.git#addCommentAtFEN",
+    "moment": "^2.30.1",
     "react-archer": "^4.4.0",
     "react-custom-scrollbars-2": "^4.5.0",
+    "react-dropdown": "^1.11.0",
     "react-icons": "^5.2.1",
     "stockfish": "^16.0.0",
     "stockfish.wasm": "^0.10.0",
-    "styled-components": "^6.1.11"
+    "styled-components": "^6.1.11",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",

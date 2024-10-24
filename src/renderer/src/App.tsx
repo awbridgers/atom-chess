@@ -1,20 +1,44 @@
 import {Chess, Color, Move, PieceSymbol, Square} from 'chess.js';
 import {useCallback, useEffect, useRef, useState} from 'react';
+import moment from 'moment';
 import Board from './components/Board';
-import {EvalResults, MoveHistory, PieceInfo, Variation} from '../../types';
+import {
+  EvalResults,
+  Game,
+  GameDetails,
+  MoveHistory,
+  PieceInfo,
+  Variation,
+} from '../../types';
 import styled from 'styled-components';
 import EvalBar from './components/EvalBar';
 import Engine from './components/Engine';
 import Moves from './components/Moves';
 import LoadPos from './components/LoadPos';
 import Menu from './components/Menu';
-import { useSquareSize } from './hooks/useSquareSize';
+import {useSquareSize} from './hooks/useSquareSize';
+import GameList from './components/GameList';
+import {v6 as uuidv6} from 'uuid';
+import GameHeaders from './components/GameHeaders';
+import Save from './components/Save';
+import {ResultType} from '../../types';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
   minimumFractionDigits: 2,
 });
 //const startPos = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const initGameInfo:GameDetails = {
+  white: 'White',
+  black: 'Black',
+  whiteElo: '0',
+  blackElo: '0',
+  result: '*',
+  date: '',
+  event: '',
+  additional: [],
+}
+
 
 function App(): JSX.Element {
   const chess = useRef(new Chess());
@@ -45,7 +69,15 @@ function App(): JSX.Element {
   } | null>(null);
   const [showArrows, setShowArrows] = useState<boolean>(true);
   const [showSetup, setShowSetup] = useState<boolean>(false);
+  const [gameList, setGameList] = useState<Game[]>([]);
+  const [gameInfo, setGameInfo] = useState<GameDetails>({...initGameInfo, additional:[]});
+  const [showGameList, setShowGameList] = useState<boolean>(false);
+  const [playBackMode, setPlayBackMode] = useState<boolean>(false);
+  const [showGameInfo, setShowGameInfo] = useState<boolean>(false);
+  const [showSaveAlert, setshowSaveAlert] = useState<boolean>(false);
   const squareSize = useSquareSize();
+  const storedIndex = useRef<number | null>(null);
+  const gameKey = useRef<string|null>(null)
   const handleRightClick = (id) => {
     if (highlightedSquares.has(id)) {
       setHighlightedSquares((prev) => {
@@ -120,13 +152,19 @@ function App(): JSX.Element {
     //replace moves if this is not the last move in the history
     const newIndex = historyIndex + 1;
     let newHistory = [...history];
-    if (newIndex !== history.length) {
+    if (newIndex !== history.length && !playBackMode) {
       //we need to replace the history after this move
       newHistory = newHistory.slice(0, newIndex);
     }
-    newHistory.push({...move, comments: ''});
-    setHistory(newHistory);
-    setHistoryIndex(newIndex);
+    if (!playBackMode) {
+      newHistory.push({...move, comments: ''});
+      setHistory(newHistory);
+      setHistoryIndex(newIndex);
+    } else {
+      //add a new variation to the comments of the current move?
+      if (storedIndex.current === null) storedIndex.current = historyIndex;
+    }
+
     setSelectedSquare(null);
     setLegalMoves(new Map());
     setBoard(chess.current.board());
@@ -145,17 +183,14 @@ function App(): JSX.Element {
       } else if (chess.current.isCheckmate()) {
         setEvaluation(chess.current.turn() === 'w' ? -20 : 20);
         setEvalText(chess.current.turn() === 'w' ? '0-1' : '1-0');
+        setBestMoves(new Map());
+        setVariations([]);
       }
     } else {
       window.api.getEval(chess.current.fen(), chess.current.turn());
     }
   };
 
-  const keyUpHandler = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      window.api.getEval(chess.current.fen(), chess.current.turn());
-    }
-  };
   const cancelPromo = () => {
     setPromoInfo(null);
     setSelectedSquare(null);
@@ -190,13 +225,19 @@ function App(): JSX.Element {
           ? history[index]
           : {after: startPos.current, to: null, from: null};
       chess.current.load(after);
+      if (chess.current.isCheckmate() || chess.current.isDraw()) {
+        setBestMoves(new Map());
+        getEval = false;
+      }
+      setBestMoves(new Map())
       setHistoryIndex(index);
       setBoard(chess.current.board());
       setMoveSquare({to, from});
       setSelectedSquare(null);
       setLegalMoves(new Map());
-      if (getEval) {
+      if(getEval){
         window.api.getEval(chess.current.fen(), chess.current.turn());
+
       }
     },
     [history]
@@ -204,16 +245,16 @@ function App(): JSX.Element {
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
-  const loadPosition = (pos: string, type: 'fen' | 'pgn') => {
+  const loadPosition = (pos: string, type: 'fen' | 'pgn', key: string) => {
     if (type === 'pgn') {
       try {
+        //load the game
         chess.current.loadPgn(pos);
-        console.log(chess.current.pgn());
         const newHistory: MoveHistory[] = chess.current.history({
           verbose: true,
         });
+        //add the comments to the game
         const comments = [...chess.current.getComments()];
-        console.log(comments);
         //attach comments to the move in the history
         for (
           let i = newHistory.length - 1;
@@ -224,15 +265,30 @@ function App(): JSX.Element {
             newHistory[i].comments = comments.pop()!.comment;
           }
         }
+        //get the headers
+        const {White, Black, WhiteElo, BlackElo, Date, Event, Result, ...additional} = chess.current.header()
+        const newGameDetails: GameDetails = {
+          white: White || 'White',
+          black: Black || 'Black',
+          whiteElo: WhiteElo || '0',
+          blackElo: BlackElo || '0',
+          date: Date || '',
+          event: Event || '',
+          result: Result as ResultType || '*',
+          additional: Object.keys(additional).map(x=>[x, additional[x]]),
+        };
+        setGameInfo(newGameDetails);
+
+        //set the history
         setHistoryIndex(newHistory.length - 1);
         setHistory(newHistory);
+        setPlayBackMode(true);
         setMoveSquare({
           to: newHistory[newHistory.length - 1].to,
           from: newHistory[newHistory.length - 1].from,
         });
-
       } catch (e) {
-        console.log(e);
+        console.log('there was an error' + e);
       }
     } else {
       //fen
@@ -240,86 +296,177 @@ function App(): JSX.Element {
         chess.current.load(pos);
         setHistory([]);
         setHistoryIndex(-1);
-        setMoveSquare({to: null, from: null})
+        setMoveSquare({to: null, from: null});
+        setGameInfo({...initGameInfo, additional:[]})
         startPos.current = chess.current.fen();
+        gameKey.current = null;
+        setPlayBackMode(false);
       } catch (e) {
         console.log(e);
       }
     }
+    if(key)gameKey.current = key;
+    else gameKey.current = null;
     window.api.getEval(chess.current.fen(), chess.current.turn());
     setPromoInfo(null);
     setBestMoves(new Map());
     setShowSetup(false);
     setSelectedSquare(null);
     setLegalMoves(new Map());
-    setHighlightedSquares(new Set())
+    setHighlightedSquares(new Set());
+    setShowGameList(false);
     setBoard(chess.current.board());
   };
+  const loadGames = async (database: string) => {
+    const {data} = await window.api.loadList(database);
+    setGameList(data);
+  };
+  const deleteGame = async (key: string) => {
+    const fullGames = [...gameList];
+    const filtered = fullGames.filter((x) => x.key !== key);
+    //save the list as the new list
+    const res = await window.api.saveList(filtered);
+    if (res) {
+      setGameList(filtered);
+    }
+  };
+  const saveGame = async (gameInfo: GameDetails) => {
+    //in order to get an accurate pgn with our added comments
+    //we have to go through every move in the history and build
+    //the complete pgn. This is because the chess object loses
+    //track of the complete pgn when we jump around the history
+    if (history.length >= 1) {
+      const chessGame = new Chess(startPos.current);
+      //add the comments to the pgn
+      for (const {comments, ...move} of history) {
+        chessGame.move(move);
+        if (comments) chessGame.setComment(comments);
+      }
+      //add the headers to the pgn
+      Object.keys(gameInfo).forEach((key)=>{
+        if(key === 'additional'){
+          for(const [key, value] of gameInfo.additional){
+            chessGame.header(key, value)
+          }
+        }else{
+          const newKey = key[0].toUpperCase() + key.slice(1);
+          chessGame.header(newKey, gameInfo[key])
+        }
+      })
+      //
+      const dataKey = gameKey.current ? gameKey.current : uuidv6();
+      const data: Game = {
+        white: gameInfo.white,
+        black: gameInfo.black,
+        result: gameInfo.result,
+        pgn: chessGame.pgn(),
+        date: new Date(gameInfo.date),
+        dateAdded: new Date(),
+        key: dataKey
+      };
+      const load = await window.api.loadList('myGames');
+      const oldList = load.data;
+      //if this game already exists, update it;
+      const prevIndex = oldList.findIndex((x) => x.key === data.key);
+      if (prevIndex !== -1) {
+        //this game already exists
+        oldList[prevIndex] = data;
+      } else {
+        oldList.push(data);
+      }
+      const res = await window.api.saveList(oldList);
+      if (res) {
+        console.log('save successful');
+        await loadGames('myGames');
+        setshowSaveAlert(false);
+        gameKey.current = data.key;
+      }
+    }
+  };
+  
 
   //engine listener
   useEffect(() => {
     window.api.onEvalResults((data: EvalResults[]) => {
       const {mate, score} = data[0];
+      //console.log(mate, score);
       if (mate !== null) {
-        setEvaluation((prev) => (mate > 0 ? 20 : mate < 0 ? -20 : prev));
-        setEvalText(`M${mate}`);
+        setEvaluation(
+          mate > 0
+            ? 20
+            : mate < 0
+              ? -20
+              : chess.current.turn() === 'w'
+                ? -20
+                : 20
+        );
+        setEvalText(`M${mate === 0 ? '' : Math.abs(mate)}`);
       } else if (score !== null) {
         setEvaluation(score / 100);
         setEvalText(numFormat.format(score / 100));
       }
       //top 3 variations
-      const variations = data.map((x) => {
-        const chess = new Chess(x.fen);
-        const color = chess.turn();
-        x.variation.forEach((move) => {
-          chess.move(move);
-        });
-        const pgnArr = chess
-          .pgn()
-          .replace(/\[.+\]/g, '')
-          .match(/(\d+\. )?[.a-hxO\-1-8QKRBNP+=#]+/g);
+      if (mate !== 0) {
+        const variations = data.map((x) => {
+          const chess = new Chess(x.fen);
+          const color = chess.turn();
+          try {
+            x.variation.forEach((move) => {
+              chess.move(move);
+            });
+          } catch (e) {
+            console.log(e);
+          }
+          const pgnArr = chess
+            .pgn()
+            .replace(/\[.+\]/g, '')
+            .match(/(\d+\. )?[.a-hxO\-1-8QKRBNP+=#]+/g);
 
-        const history = chess.history({verbose: true});
-        const lines =
-          color === 'b'
-            ? [{after: null, to: null, from: null}, ...history]
-            : history;
-        return {
-          line: !pgnArr
-            ? []
-            : pgnArr.map((move, i) => ({
-                move: move,
-                fen: lines[i].after,
-                to: lines[i].to,
-                from: lines[i].from,
-              })),
-          score: x.mate
-            ? `M${x.mate}`
-            : x.score
-              ? numFormat.format(x.score / 100)
-              : '0',
-        };
-      });
-      const bestMoveMap: Map<Square, Square[]> = new Map();
-      variations.forEach((variation) => {
-        const to = variation.line[0].to
-          ? variation.line[0].to
-          : variation.line[1].to
-            ? variation.line[1].to
-            : null;
-        const from = variation.line[0].from
-          ? variation.line[0].from
-          : variation.line[1].from
-            ? variation.line[1].from
-            : null;
-        if (to && from) {
-          if (bestMoveMap.has(from)) {
-            bestMoveMap.get(from)!.push(to);
-          } else bestMoveMap.set(from, [to]);
-        }
-      });
-      setBestMoves(bestMoveMap);
-      setVariations(variations);
+          const history = chess.history({verbose: true});
+          const lines =
+            color === 'b'
+              ? [{after: null, to: null, from: null}, ...history]
+              : history;
+          return {
+            line: !pgnArr
+              ? []
+              : pgnArr.map((move, i) => ({
+                  move: move,
+                  fen: lines[i].after,
+                  to: lines[i].to,
+                  from: lines[i].from,
+                })),
+            score: x.mate
+              ? `M${Math.abs(x.mate)}`
+              : x.score
+                ? numFormat.format(x.score / 100)
+                : '0',
+          };
+        });
+        const bestMoveMap: Map<Square, Square[]> = new Map();
+        variations.forEach((variation) => {
+          const to = variation.line[0].to
+            ? variation.line[0].to
+            : variation.line[1].to
+              ? variation.line[1].to
+              : null;
+          const from = variation.line[0].from
+            ? variation.line[0].from
+            : variation.line[1].from
+              ? variation.line[1].from
+              : null;
+          if (to && from) {
+            if (bestMoveMap.has(from)) {
+              bestMoveMap.get(from)!.push(to);
+            } else bestMoveMap.set(from, [to]);
+          }
+        });
+        setBestMoves(bestMoveMap);
+        setVariations(variations);
+      } else {
+        setVariations([]);
+        setBestMoves(new Map());
+      }
     });
     return () => window.api.removeEvalListener();
   }, []);
@@ -328,10 +475,23 @@ function App(): JSX.Element {
   }, []);
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' && historyIndex >= 0) {
-        jump(historyIndex - 1, false);
-      } else if (e.key === 'ArrowRight' && historyIndex < history.length - 1) {
-        jump(historyIndex + 1, false);
+      if (!showGameInfo && !showGameList && !showSaveAlert && !showSetup) {
+        if (e.key === 'ArrowLeft' && historyIndex >= 0) {
+          const jumpPoint =
+            storedIndex.current !== null
+              ? storedIndex.current
+              : historyIndex - 1;
+          jump(jumpPoint, false);
+          storedIndex.current = null;
+          setBestMoves(new Map());
+        } else if (
+          e.key === 'ArrowRight' &&
+          historyIndex < history.length - 1 &&
+          storedIndex.current === null
+        ) {
+          jump(historyIndex + 1, false);
+          setBestMoves(new Map());
+        }
       }
     };
     //set up listeners for arrow keys down
@@ -339,71 +499,154 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener('keydown', keyDownHandler);
     };
-  }, [historyIndex, history, jump]);
+  }, [
+    historyIndex,
+    history,
+    jump,
+    showGameInfo,
+    showGameList,
+    showSaveAlert,
+    showSetup,
+  ]);
   useEffect(() => {
     //set up listeners for arrow keys up
     //this is so when the users hold down the arrow key
     //to skip back really far, we aren't evaluating every position skipped over
+    const keyUpHandler = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+        !showGameInfo &&
+        !showGameList &&
+        !showSaveAlert &&
+        !showSetup
+      ) {
+        // if (!chess.current.isCheckmate() && !chess.current.isDraw()) {
+        window.api.getEval(chess.current.fen(), chess.current.turn());
+        // } else {
+        //   //the game is ended
+        //   setVariations([]);
+        //   setBestMoves(new Map());
+        // }
+      }
+    };
     window.addEventListener('keyup', keyUpHandler);
     return () => {
       window.removeEventListener('keyup', keyUpHandler);
     };
+  }, [showGameInfo, showGameList, showSaveAlert, showSetup]);
+  useEffect(() => {
+    //load the games from the list
+    loadGames('myGames');
   }, []);
   useEffect(() => {
     //console.log(history, historyIndex);
   }, [history, historyIndex]);
   return (
     <Container>
-      <EvalBar height={squareSize*8} score={evaluation} />
-      <BoardContainer>
-        {showSetup && (
-          <LoadDiv>
-            <LoadPos load={loadPosition} cancel={() => setShowSetup(false)} />
-          </LoadDiv>
-        )}
-        <Board
-          squareHeight={squareSize}
-          onClickSquare={handleSelect}
-          board={board}
-          selectedSquare={selectedSquare}
-          highlightedSquares={highlightedSquares}
-          handleRightClick={handleRightClick}
-          legalMoves={legalMoves}
-          prevMove={moveSquare}
-          promoInfo={promoInfo}
-          flipped={flippedBoard}
-          cancelPromo={cancelPromo}
-          promote={movePiece}
-          bestMoves={bestMoves}
-          showArrows={showArrows}
-        />
-      </BoardContainer>
-      <GameInfo $height = {squareSize*8}>
-        <Engine
-          value={evalText}
-          variations={variations}
-          flipped={flippedBoard}
-        />
-        <Moves
-          currentMove={historyIndex}
-          moveList={history}
-          jump={jump}
-          addComment={addComment}
-          deleteComment={deleteComment}
-        />
-        <Menu
-          flipBoard={flipBoard}
-          setupGame={() => setShowSetup(true)}
-          showArrows={showArrows}
-          toggleShowArrows={toggleArrows}
-        />
-      </GameInfo>
+      <GameContainer>
+        <EvalBar height={squareSize * 8} score={evaluation} />
+        <BoardContainer>
+          {showGameList && (
+            <GameList
+              list={gameList}
+              close={() => setShowGameList(false)}
+              open={(pos:string, key: string)=>loadPosition(pos, 'pgn', key)}
+              deleteGame={deleteGame}
+            />
+          )}
+          {showSetup && (
+            <LoadDiv>
+              <LoadPos load={loadPosition} cancel={() => setShowSetup(false)} />
+            </LoadDiv>
+          )}
+          {showGameInfo && (
+            <GameHeaders
+              white={gameInfo.white}
+              black={gameInfo.black}
+              whiteElo={gameInfo.whiteElo}
+              blackElo={gameInfo.blackElo}
+              rest={gameInfo.additional}
+              event={gameInfo.event}
+              date = {gameInfo.date}
+              result={gameInfo.result}
+              close={() => setShowGameInfo(false)}
+            ></GameHeaders>
+          )}
+          {showSaveAlert && (
+            <Save
+              accept={saveGame}
+              cancel={() => setshowSaveAlert(false)}
+              white={gameInfo.white}
+              black={gameInfo.black}
+              whiteElo={gameInfo.whiteElo}
+              blackElo={gameInfo.blackElo}
+              event={gameInfo.event}
+              date={gameInfo.date}
+              result={gameInfo.result}
+              additional={gameInfo.additional.flat().join(',')}
+            />
+          )}
+          <Board
+            squareHeight={squareSize}
+            onClickSquare={handleSelect}
+            board={board}
+            selectedSquare={selectedSquare}
+            highlightedSquares={highlightedSquares}
+            handleRightClick={handleRightClick}
+            legalMoves={legalMoves}
+            prevMove={moveSquare}
+            promoInfo={promoInfo}
+            flipped={flippedBoard}
+            cancelPromo={cancelPromo}
+            promote={movePiece}
+            bestMoves={bestMoves}
+            showArrows={showArrows}
+            white={gameInfo.white}
+            black={gameInfo.black}
+            whiteElo={gameInfo.whiteElo}
+            blackElo={gameInfo.blackElo}
+          />
+        </BoardContainer>
+        <GameInfo $height={squareSize * 8}>
+          <Engine
+            value={evalText}
+            variations={variations}
+            flipped={flippedBoard}
+          />
+          <Moves
+            currentMove={historyIndex}
+            moveList={history}
+            jump={jump}
+            addComment={addComment}
+            deleteComment={deleteComment}
+          />
+          <Menu
+            flipBoard={flipBoard}
+            setupGame={() => setShowSetup(true)}
+            showArrows={showArrows}
+            toggleShowArrows={toggleArrows}
+            saveGame={() => setshowSaveAlert(true)}
+            showGameList={() => setShowGameList(true)}
+            showGameInfo={() => setShowGameInfo(true)}
+          />
+        </GameInfo>
+      </GameContainer>
     </Container>
   );
 }
 const Container = styled.div`
   display: flex;
-  align-items: flex-start;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #000000;
+  min-width: 650px;
+  font-family: Arial, Helvetica, sans-serif;
+`;
+
+const GameContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
   justify-content: center;
   background-color: #000000;
   min-width: 650px;
@@ -414,8 +657,9 @@ const GameInfo = styled.div<{$height: number}>`
   flex-direction: column;
   justify-content: flex-start;
   background-color: blue;
-  height: ${(props)=>props.$height}px;
+  height: ${(props) => props.$height}px;
   width: 300px;
+  position: relative;
 `;
 const BoardContainer = styled.div`
   display: flex;

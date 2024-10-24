@@ -3,6 +3,11 @@ import {join} from 'path';
 import {electronApp, optimizer, is} from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 const stockfish = require('stockfish.wasm');
+import {Game} from '../types'
+import fs from 'fs';
+
+
+
 
 global.nextPos = null;
 global.engineWorking = false;
@@ -73,11 +78,22 @@ app.whenReady().then(() => {
     sf.addMessageListener((line) => {
       if (line.includes('bestmove')) {
         //we want to pass the top 3 moves and variations back to the renderer
+        //console.log(res)
+        //TODO: CURRENTLY WORKING ON GETTING THE ENGINE TO SEND IF THE GAME IS ENDED IN MATE
         const data = res.slice(-3).map((evaluation) => {
           const scoreLine = evaluation.match(/cp -?[\d]+/);
           const mateLine = evaluation.match(/mate -?[\d]+/);
           const variationLine = evaluation.match(/(([a-h][\d]){2} ?)+[qkrb]?/);
-          if ((scoreLine || mateLine) && variationLine) {
+          if(mateLine && !variationLine && !scoreLine){
+            //this game is over
+            return {
+              score: null,
+              mate: 0,
+              variation: [],
+              fen: global.pos
+            }
+          }
+          else if ((scoreLine || mateLine) && variationLine) {
             const mod = global.color === 'w' ? 1 : -1;
             return {
               score: scoreLine
@@ -91,6 +107,7 @@ app.whenReady().then(() => {
           return null;
         });
         mainWindow.webContents.send('evalResults', data);
+        res = [];
         global.engineWorking = false;
         if (global.nextPos) {
           const nextPos = global.nextPos.pos;
@@ -98,7 +115,7 @@ app.whenReady().then(() => {
           getEval(nextPos, nextColor);
           global.nextPos = null;
         }
-      } else {
+      } else if(line.includes(' depth 15') || line.includes('mate 0')) {
         res.push(line);
       }
     });
@@ -132,3 +149,25 @@ ipcMain.on('getEval', (_, pos: string, color: 'w' | 'b') => {
     getEval(pos, color);
   }
 });
+ipcMain.handle('saveList', (_, data: Game[])=>{
+  try{
+    const path = app.getPath('userData');
+    const userData = JSON.stringify(data);
+    fs.writeFileSync(`${path}/myGames.json`, userData);
+    return true
+
+  }catch(e){
+    console.log(e);
+    return false
+  }
+})
+ipcMain.handle('loadList', (_, name:string)=>{
+  try{
+    const path = app.getPath('userData');
+    const gamesList = fs.readFileSync(`${path}/${name}.json`, 'utf-8');
+    return {data: JSON.parse(gamesList)}
+  }catch(e){
+    console.log(e);
+    return {data:[]}
+  }
+})

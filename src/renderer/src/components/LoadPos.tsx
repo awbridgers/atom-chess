@@ -2,7 +2,7 @@ import {useState} from 'react';
 import styled from 'styled-components';
 
 type Props = {
-  load: (pos: string,type: 'fen'|'pgn') => void;
+  load: (pos: string,type: 'fen'|'pgn', key: string) => void;
   cancel: ()=>void;
 };
 
@@ -11,9 +11,9 @@ const LoadPos = ({load,cancel}: Props) => {
   const [pgn, setPgn] = useState<string>('');
   const loadPosition = ()=>{
     if(pgn){
-      load(pgn, 'pgn')
+      load(pgn, 'pgn','')
     }else if(fen){
-      load(fen, 'fen')
+      load(fen, 'fen','')
     }
   }
   return (
@@ -30,6 +30,7 @@ const LoadPos = ({load,cancel}: Props) => {
         onChange={(e) => setPgn(e.target.value)}
       />
       <ButtonContainer>
+      <Button onClick={()=>load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 'fen', '')}>New Game</Button>
       <Button onClick = {loadPosition}>Load Position</Button>
       <Button onClick = {cancel}>Cancel</Button>
       </ButtonContainer>
