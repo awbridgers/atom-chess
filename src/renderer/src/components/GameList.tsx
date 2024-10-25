@@ -40,28 +40,31 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
           bgColor = {'green'}
         />
       )}
-      <Body>
-        <Header>
-          <Section $title>No.</Section>
-          <Section $title>White</Section>
-          <Section $title>Black</Section>
-          <Section $title>Result</Section>
-        </Header>
-        <Scrollbars>
-          {list.map((game, i) => (
-            <Row
-              key={game.key}
-              onClick={() => setSelected(game)}
-              $highlighted={selected ? game.key === selected.key : false}
-            >
-              <Section>{i + 1}</Section>
-              <Section>{game.white}</Section>
-              <Section>{game.black}</Section>
-              <Section>{game.result}</Section>
-            </Row>
-          ))}
-        </Scrollbars>
-      </Body>
+      <Scrollbars style = {{flex:1}}>
+      <Table>
+        <tbody>
+          <tr>
+            <Header>No.</Header>
+            <Header>White</Header>
+            <Header>Black</Header>
+            <Header>Result</Header>
+          </tr>
+       
+            {list.map((game, i) => (
+              <Row
+                key={game.key}
+                onClick={() => setSelected(!selected ? game : selected.key ===game.key ? null : game)}
+                $highlighted={selected ? game.key === selected.key : false}
+              >
+                <Section>{i + 1}</Section>
+                <Section>{game.white}</Section>
+                <Section>{game.black}</Section>
+                <Section>{game.result}</Section>
+              </Row>
+            ))}
+        </tbody>
+      </Table>
+      </Scrollbars>
       <ButtonContainer>
         <Button
           onClick={() => setShowDeleteAlert(true)}
@@ -89,49 +92,34 @@ const Container = styled.div`
   background-color: #001b75;
   justify-content: space-around;
   z-index: 10;
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: flex-start;
   padding: 5px;
   border-radius: 8px;
   color: white;
-`;
-const Section = styled.div<{$title?: boolean}>`
-  overflow-x: hidden;
-  font-size: ${(props) => (props.$title ? '22px' : '18px')};
-  margin: ${(props) => (props.$title ? '10px 0px' : '5px 0px')};
-  font-weight: ${(props) => (props.$title ? 'bold' : 'normal')};
-  width: 25%;
   display: flex;
-  justify-content: center;
+  flex-flow: column;
+  justify-content: flex-start;
   align-items: center;
+`;
+const Section = styled.td<{$title?: boolean}>`
+  overflow-x: hidden;
   text-align: center;
+  cursor: pointer;
+  user-select: none;
+  
+  
 `;
-const Header = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-around;
-  width: 100%;
+const Header = styled.th`
+ 
 `;
-const Row = styled.div<{$highlighted?: boolean}>`
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-around;
-  width: 100%;
-  background-color: ${(props) => (props.$highlighted ? 'aqua' : 'none')};
+const Row = styled.tr<{$highlighted?: boolean}>`
+  background-color: ${(props) => (props.$highlighted ? '#0e7800' : 'none')};
   &:hover {
     background-color: ${(props) => (props.$highlighted ? 'none' : '#045858')};
   }
 `;
-const Body = styled.div`
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  height: 100%;
-  flex: 1;
+const Table = styled.table`
+  width:99%;
+  border-collapse:collapse;
 `;
 const ButtonContainer = styled.div`
   display: flex;
