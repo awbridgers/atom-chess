@@ -46,11 +46,13 @@ const Save = ({
       console.log('Date is not valid');
     } else {
       const add: [string, string][] = [];
-      const temp = newAdditional.split(',');
-      if(temp.length % 2 === 1) temp.push(' ');
-      for(let i = 0; i<temp.length-1; i+=2){
-        add.push([temp[i], temp[i+1]])
-      }
+      const tags = newAdditional.match(/\[[^[\]]+\]/g) || [];
+      tags.forEach((match)=>{
+        const tag = match.slice(1, match.length-1)  //remove braces
+        const [heading, ...info] = tag.split(' ');
+        add.push([heading, info.join(' ')]);
+      })
+
 
       const details: GameDetails = {
         white: newWhite,
@@ -147,7 +149,7 @@ const Save = ({
               </td>
             </Row>
             <Row>
-              <Header>Additional (CSV)</Header>
+              <Header><div>Additional</div><div style = {{fontSize: '12px', margin: '0px'}}>([Title Info])</div></Header>
               <td>
                 <Input
                   value={newAdditional}

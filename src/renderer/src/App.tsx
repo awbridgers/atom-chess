@@ -345,8 +345,10 @@ function App(): JSX.Element {
       //add the headers to the pgn
       Object.keys(gameInfo).forEach((key)=>{
         if(key === 'additional'){
+          console.log(gameInfo[key])
           for(const [key, value] of gameInfo.additional){
-            chessGame.header(key, value)
+            const newKey = key[0].toUpperCase() + key.slice(1);
+            chessGame.header(newKey, value)
           }
         }else{
           const newKey = key[0].toUpperCase() + key.slice(1);
@@ -583,7 +585,7 @@ function App(): JSX.Element {
               event={gameInfo.event}
               date={gameInfo.date}
               result={gameInfo.result}
-              additional={gameInfo.additional.flat().join(',')}
+              additional={gameInfo.additional.map(([header, info])=>`[${header} ${info}]`).join('')}
             />
           )}
           <Board
