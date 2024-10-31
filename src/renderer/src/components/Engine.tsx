@@ -3,17 +3,17 @@ import {useRef, useState} from 'react';
 import {PieceInfo, Variation} from 'src/types';
 import styled from 'styled-components';
 import Board from './Board';
-import {FaCaretDown, FaCaretUp} from 'react-icons/fa';
+import {FaCaretDown, FaCaretUp, FaCog} from 'react-icons/fa';
 
 type Props = {
   value: string;
   variations: Variation[];
-  flipped : boolean
+  flipped: boolean;
+  openOptions: () => void;
+  depth: number
 };
 
-
-
-const Engine = ({value, variations, flipped}: Props) => {
+const Engine = ({value, variations, flipped, openOptions, depth}: Props) => {
   const [boardInfo, setBoardInfo] = useState<(PieceInfo | null)[][]>([]);
   const [boardCoords, setBoardCoords] = useState<number>(-1);
   const [moveSqaure, setMoveSquare] = useState<{
@@ -43,7 +43,8 @@ const Engine = ({value, variations, flipped}: Props) => {
     <Container>
       <Evaluation>
         <div style={{minWidth: '50px', fontWeight: 'bold'}}>{value}</div>
-        <div style={{fontSize: '20px'}}>SF 16, depth: 15</div>
+        <div style={{fontSize: '20px'}}>depth: {depth}</div>
+        <FaCog onClick={openOptions} className="buttonIcon" size={20} />
       </Evaluation>
       <VarContainer>
         {variations.map((chessLine, i) => (
@@ -64,7 +65,7 @@ const Engine = ({value, variations, flipped}: Props) => {
                   prevMove={moveSqaure}
                   squareHeight={30}
                   hideNumbers
-                  flipped = {flipped}
+                  flipped={flipped}
                 />
               </div>
             )}
@@ -107,7 +108,7 @@ const Engine = ({value, variations, flipped}: Props) => {
 };
 
 const Container = styled.div`
-  width:100%;
+  width: 100%;
   align-self: flex-start;
   display: flex;
   flex-direction: column;
@@ -116,6 +117,13 @@ const Container = styled.div`
   font-family: Arial, Helvetica, sans-serif;
   border: 2px solid white;
   box-sizing: border-box;
+  .buttonIcon {
+    color: #a3a3a3;
+    cursor: pointer;
+  }
+  .buttonIcon:hover {
+    color: #ffffff;
+  }
 `;
 const Evaluation = styled.div`
   display: flex;

@@ -5,7 +5,7 @@ import { Game } from '../types'
 
 // Custom APIs for renderer
 const api = {
-  getEval: (pos: string, color: Color)=>ipcRenderer.send('getEval', pos, color),
+  getEval: (pos: string, color: Color, depth: number)=>ipcRenderer.send('getEval', pos, color, depth),
   onEvalResults: (callback)=>ipcRenderer.on('evalResults', (_, data)=>{callback(data)}),
   removeEvalListener: ()=>ipcRenderer.removeListener('evalResults',()=> console.log('listener removed')),
   saveList: (data: Game[])=>ipcRenderer.invoke('saveList', data),

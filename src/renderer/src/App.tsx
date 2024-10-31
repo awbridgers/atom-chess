@@ -1,6 +1,5 @@
 import {Chess, Color, Move, PieceSymbol, Square} from 'chess.js';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import moment from 'moment';
 import Board from './components/Board';
 import {
   EvalResults,
@@ -22,6 +21,7 @@ import {v6 as uuidv6} from 'uuid';
 import GameHeaders from './components/GameHeaders';
 import Save from './components/Save';
 import {ResultType} from '../../types';
+import EngineOptions from './components/EngineOptions';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
@@ -75,6 +75,9 @@ function App(): JSX.Element {
   const [playBackMode, setPlayBackMode] = useState<boolean>(false);
   const [showGameInfo, setShowGameInfo] = useState<boolean>(false);
   const [showSaveAlert, setshowSaveAlert] = useState<boolean>(false);
+  const [engineOn, setEngineOn] = useState<boolean>(true)
+  const [depth, setDepth] = useState<number>(16);
+  const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false)
   const squareSize = useSquareSize();
   const storedIndex = useRef<number | null>(null);
   const gameKey = useRef<string|null>(null)
@@ -89,6 +92,11 @@ function App(): JSX.Element {
       setHighlightedSquares((prev) => new Set(prev).add(id));
     }
   };
+  const fetchEvaluation = useCallback((fen:string, turn: 'w'|'b')=>{
+    if(engineOn){
+      window.api.getEval(fen, turn, depth)
+    }
+  },[engineOn, depth]);
   const handleSelect = (id: Square) => {
     const squareInfo = chess.current.get(id);
     if (!selectedSquare) {
@@ -187,7 +195,7 @@ function App(): JSX.Element {
         setVariations([]);
       }
     } else {
-      window.api.getEval(chess.current.fen(), chess.current.turn());
+      fetchEvaluation(chess.current.fen(), chess.current.turn());
     }
   };
 
@@ -236,11 +244,11 @@ function App(): JSX.Element {
       setSelectedSquare(null);
       setLegalMoves(new Map());
       if(getEval){
-        window.api.getEval(chess.current.fen(), chess.current.turn());
+        fetchEvaluation(chess.current.fen(), chess.current.turn());
 
       }
     },
-    [history]
+    [history, fetchEvaluation]
   );
   const toggleArrows = () => {
     setShowArrows(!showArrows);
@@ -307,7 +315,7 @@ function App(): JSX.Element {
     }
     if(key)gameKey.current = key;
     else gameKey.current = null;
-    window.api.getEval(chess.current.fen(), chess.current.turn());
+    fetchEvaluation(chess.current.fen(), chess.current.turn());
     setPromoInfo(null);
     setBestMoves(new Map());
     setShowSetup(false);
@@ -385,6 +393,7 @@ function App(): JSX.Element {
       }
     }
   };
+  
   
 
   //engine listener
@@ -472,9 +481,19 @@ function App(): JSX.Element {
     });
     return () => window.api.removeEvalListener();
   }, []);
-  useEffect(() => {
-    window.api.getEval(chess.current.fen(), chess.current.turn());
-  }, []);
+  //listen for engine on/off changes
+  useEffect(()=>{
+    if(engineOn){
+      fetchEvaluation(chess.current.fen(), chess.current.turn())
+      setShowArrows(true);
+    }else{
+      setEvalText('Off');
+      setVariations([]);
+      setBestMoves(new Map());
+      setShowArrows(false);
+      setEvaluation(0);
+    }
+  }, [engineOn, fetchEvaluation])
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
       if (!showGameInfo && !showGameList && !showSaveAlert && !showSetup) {
@@ -523,7 +542,7 @@ function App(): JSX.Element {
         !showSetup
       ) {
         // if (!chess.current.isCheckmate() && !chess.current.isDraw()) {
-        window.api.getEval(chess.current.fen(), chess.current.turn());
+        fetchEvaluation(chess.current.fen(), chess.current.turn());
         // } else {
         //   //the game is ended
         //   setVariations([]);
@@ -535,11 +554,12 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener('keyup', keyUpHandler);
     };
-  }, [showGameInfo, showGameList, showSaveAlert, showSetup]);
+  }, [showGameInfo, showGameList, showSaveAlert, showSetup, fetchEvaluation]);
   useEffect(() => {
     //load the games from the list
     loadGames('myGames');
   }, []);
+  
   useEffect(() => {
     //console.log(history, historyIndex);
   }, [history, historyIndex]);
@@ -588,6 +608,17 @@ function App(): JSX.Element {
               additional={gameInfo.additional.map(([header, info])=>`[${header} ${info}]`).join('')}
             />
           )}
+          {
+            showEngineOptions && (
+              <EngineOptions 
+                active = {engineOn}
+                setActive={setEngineOn}
+                depth={depth}
+                setDepth={setDepth}
+                exit = {()=>setShowEngineOptions(false)}
+              />
+            )
+          }
           <Board
             squareHeight={squareSize}
             onClickSquare={handleSelect}
@@ -614,6 +645,8 @@ function App(): JSX.Element {
             value={evalText}
             variations={variations}
             flipped={flippedBoard}
+            openOptions={()=>setShowEngineOptions(true)}
+            depth = {depth}
           />
           <Moves
             currentMove={historyIndex}

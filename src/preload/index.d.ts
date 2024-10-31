@@ -6,7 +6,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      getEval: (pos: string, color: Color)=>void;
+      getEval: (pos: string, color: Color, depth: number)=>void;
       onEvalResults: (callback: (data:EvalResults[])=>void) =>void,
       removeEvalListener: ()=>void;
       saveList: (data: Game[])=> Promise<boolean>;
