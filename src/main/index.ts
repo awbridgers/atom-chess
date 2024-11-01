@@ -13,12 +13,13 @@ global.nextPos = null;
 global.engineWorking = false;
 global.color = 'w';
 
-const getEval = (pos: string, color: 'b' | 'w') => {
+const getEval = (pos: string, color: 'b' | 'w', depth: number) => {
   global.engineWorking = true;
   global.pos = pos;
   global.color = color;
+  global.depth = depth;
   global.engine.postMessage(`position fen ${pos}`);
-  global.engine.postMessage('go depth 15');
+  global.engine.postMessage(`go depth ${depth}`);
 };
 
 function createWindow(): BrowserWindow {
@@ -112,10 +113,11 @@ app.whenReady().then(() => {
         if (global.nextPos) {
           const nextPos = global.nextPos.pos;
           const nextColor = global.nextPos.color;
-          getEval(nextPos, nextColor);
+          const nextDepth = global.nextPos.depth;
+          getEval(nextPos, nextColor, nextDepth);
           global.nextPos = null;
         }
-      } else if(line.includes(' depth 15') || line.includes('mate 0')) {
+      } else if(line.includes(` depth ${global.depth}`) || line.includes('mate 0')) {
         res.push(line);
       }
     });
@@ -142,11 +144,11 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
-ipcMain.on('getEval', (_, pos: string, color: 'w' | 'b') => {
+ipcMain.on('getEval', (_, pos: string, color: 'w' | 'b', depth: number) => {
   if (global.engineWorking) {
-    global.nextPos = {pos, color}
+    global.nextPos = {pos, color, depth}
   } else {
-    getEval(pos, color);
+    getEval(pos, color, depth);
   }
 });
 ipcMain.handle('saveList', (_, data: Game[])=>{
