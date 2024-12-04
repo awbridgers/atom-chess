@@ -1,7 +1,7 @@
-import {Game} from 'src/types';
+import {Game, OrderedGame} from 'src/types';
 import styled from 'styled-components';
 import Scrollbars from 'react-custom-scrollbars-2';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Alert from './Alert';
 
 type Props = {
@@ -11,10 +11,14 @@ type Props = {
   deleteGame: (key: string) => void;
 };
 
+type Sort = 'order'|'result'|'white'|'black'
+
 const GameList = ({list, open, close, deleteGame}: Props) => {
   const [selected, setSelected] = useState<Game | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState<boolean>(false);
-
+  const [sortedList, setSortedList] = useState<OrderedGame[]>(list.map((x,i)=>({...x,order: i})))
+  const [sortType, setSortType] = useState<Sort>('order')
+  const [sortDecreasing, setSortDecreasing] = useState<boolean>(true);
   const handleDelete = ()=>{
     if(selected){
       deleteGame(selected.key);
@@ -27,8 +31,26 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
       open(selected.pgn,selected.key);
     }
   }
-  
-
+  const sortList = (type: Sort)=>{
+    //if we click on the same sort while the list is incrseasing, return to defualt sort
+    if((type === sortType) && !sortDecreasing){
+      //revert to default sort
+      setSortType('order');
+      setSortDecreasing(true);
+      setSortedList(prev=>[...prev].sort((a,b)=>a.order - b.order))
+    }else if(type === sortType){
+      setSortDecreasing(false);
+      setSortedList(prev=>[...prev].reverse())
+    }else{
+      setSortType(type);
+      setSortDecreasing(true);
+      setSortedList(prev=>[...prev].sort((a,b)=>a[type] > b[type] ? 1 : b[type] > a[type] ?  -1 : 0))
+      
+    }
+  }
+useEffect(()=>{
+  //change the sort
+}, [sortType, sortDecreasing])
   return (
     <Container>
       {showDeleteAlert && (
@@ -44,19 +66,19 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
       <Table>
         <tbody>
           <tr>
-            <Header>No.</Header>
-            <Header>White</Header>
-            <Header>Black</Header>
-            <Header>Result</Header>
+            <Header onClick = {()=>sortList('order')}>No.</Header>
+            <Header onClick = {()=>sortList('white')}>White</Header>
+            <Header onClick = {()=>sortList('black')}>Black</Header>
+            <Header onClick = {()=>sortList('result')}>Result</Header>
           </tr>
        
-            {list.map((game, i) => (
+            {sortedList.map((game) => (
               <Row
                 key={game.key}
                 onClick={() => setSelected(!selected ? game : selected.key ===game.key ? null : game)}
                 $highlighted={selected ? game.key === selected.key : false}
               >
-                <Section>{i + 1}</Section>
+                <Section>{game.order + 1}</Section>
                 <Section>{game.white}</Section>
                 <Section>{game.black}</Section>
                 <Section>{game.result}</Section>
@@ -109,7 +131,7 @@ const Section = styled.td<{$title?: boolean}>`
   
 `;
 const Header = styled.th`
- 
+  cursor: pointer;
 `;
 const Row = styled.tr<{$highlighted?: boolean}>`
   background-color: ${(props) => (props.$highlighted ? '#0e7800' : 'none')};
