@@ -9,7 +9,9 @@ const api = {
   onEvalResults: (callback)=>ipcRenderer.on('evalResults', (_, data)=>{callback(data)}),
   removeEvalListener: ()=>ipcRenderer.removeListener('evalResults',()=> console.log('listener removed')),
   saveList: (data: Game[])=>ipcRenderer.invoke('saveList', data),
-  loadList: (name: string)=>ipcRenderer.invoke('loadList', name)
+  loadList: (name: string)=>ipcRenderer.invoke('loadList', name),
+  saveUsernames : (names: string[])=>ipcRenderer.invoke('saveUsernames', names),
+  loadUsernames: ()=>ipcRenderer.invoke('loadUsernames')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

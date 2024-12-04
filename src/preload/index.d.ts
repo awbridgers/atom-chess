@@ -11,6 +11,8 @@ declare global {
       removeEvalListener: ()=>void;
       saveList: (data: Game[])=> Promise<boolean>;
       loadList: (name: string)=>Promise<{data:Game[]}>;
+      loadUsernames: ()=>Promise<{data:string[]| null}>;
+      saveUsernames: (names:string[])=>Promise<boolean>;
     }
   }
 }

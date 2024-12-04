@@ -30,6 +30,8 @@ export type Game = {
     date: Date;
     dateAdded: Date;
   }
+
+  export type OrderedGame = Game & {order: number};
 export type GameDetails = {
   white: string;
   whiteElo: string;

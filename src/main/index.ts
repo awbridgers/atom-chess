@@ -173,3 +173,25 @@ ipcMain.handle('loadList', (_, name:string)=>{
     return {data:[]}
   }
 })
+ipcMain.handle('saveUsernames', (_, names:string[])=>{
+  try{
+    const path = app.getPath('userData');
+    const data = JSON.stringify(names);
+    fs.writeFileSync(`${path}/usernames.json`, data);
+    return true
+  }catch(e){
+    console.log(e);
+    return false;
+  }
+})
+ipcMain.handle('loadUsernames', (_)=>{
+  try{
+    const path = app.getPath('userData');
+    const data = fs.readFileSync(`${path}/usernames.json`,'utf-8');
+    return {data: JSON.parse(data)}
+  }
+  catch(e){
+    console.log(e);
+    return null;
+  }
+})

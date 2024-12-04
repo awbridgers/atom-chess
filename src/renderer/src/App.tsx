@@ -6,6 +6,7 @@ import {
   Game,
   GameDetails,
   MoveHistory,
+  OrderedGame,
   PieceInfo,
   Variation,
 } from '../../types';
@@ -77,6 +78,7 @@ function App(): JSX.Element {
   const [showSaveAlert, setshowSaveAlert] = useState<boolean>(false);
   const [engineOn, setEngineOn] = useState<boolean>(true)
   const [depth, setDepth] = useState<number>(16);
+  const [usernames, setUsernames] = useState<string[]>([])
   const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false)
   const squareSize = useSquareSize();
   const storedIndex = useRef<number | null>(null);
@@ -327,6 +329,7 @@ function App(): JSX.Element {
   };
   const loadGames = async (database: string) => {
     const {data} = await window.api.loadList(database);
+    data.sort((a,b)=>a.dateAdded.valueOf()-b.dateAdded.valueOf());
     setGameList(data);
   };
   const deleteGame = async (key: string) => {
@@ -529,6 +532,15 @@ function App(): JSX.Element {
     showSaveAlert,
     showSetup,
   ]);
+  useEffect(()=>{
+    const loadNames = async () =>{
+      const {data} = await window.api.loadUsernames();
+      if(data){
+        setUsernames(data)
+      }
+    }
+    loadNames();
+  },[])
   useEffect(() => {
     //set up listeners for arrow keys up
     //this is so when the users hold down the arrow key
