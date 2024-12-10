@@ -1,5 +1,3 @@
-import {useSquareSize} from '@renderer/hooks/useSquareSize';
-import {useMemo, useState} from 'react';
 import Scrollbars from 'react-custom-scrollbars-2';
 import {ResultType} from 'src/types';
 import styled from 'styled-components';
@@ -88,23 +86,6 @@ const Container = styled.div`
   border-radius: 8px;
   color: white;
 `;
-const NamesContainer = styled.div`
-  font-size: 24px;
-  align-self: center;
-  color: white;
-`;
-const Name = styled.div`
-  font-weight: bold;
-  font-size: 24px;
-  display: inline;
-`;
-const ButtonContainer = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-`;
 const Table = styled.table`
   width: 99%;
   margin: auto;
@@ -117,12 +98,6 @@ const Info = styled.td`
   font-size: 22px;
   padding: 10px;
   line-break: anywhere;
-`;
-const Body = styled.div`
-  display: flex;
-  justify-content: center;
-  height: 400px;
-  flex: 1;
 `;
 
 const Button = styled.button<{$disabled?: boolean}>`

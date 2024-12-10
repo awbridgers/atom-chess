@@ -1,6 +1,5 @@
-import {Color, Move, PieceSymbol, Square} from 'chess.js';
+import {Color, PieceSymbol, Square} from 'chess.js';
 import styled from 'styled-components';
-import {FaX} from 'react-icons/fa6';
 
 import blackQueen from '../assets/images/blackQueen.png';
 import blackRook from '../assets/images/blackRook.png';

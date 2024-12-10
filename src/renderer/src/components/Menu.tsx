@@ -2,14 +2,11 @@ import styled from 'styled-components';
 import {
   FaRetweet,
   FaPlus,
-  FaDatabase,
   FaArrowCircleUp,
   FaSave,
   FaInfoCircle,
 } from 'react-icons/fa';
-import {useState} from 'react';
-import Alert from './Alert';
-import { FaFolder, FaFolderOpen } from 'react-icons/fa6';
+import { FaFolderOpen } from 'react-icons/fa6';
 
 type Props = {
   flipBoard: () => void;
@@ -30,7 +27,6 @@ const Menu = ({
   showGameList,
   showGameInfo
 }: Props) => {
-  const [showAlert, setShowAlert] = useState<boolean>(false);
 
   return (
     <Container>

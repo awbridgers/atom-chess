@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {GameDetails, ResultType} from 'src/types';
 import styled from 'styled-components';
 import Dropdown from 'react-dropdown';

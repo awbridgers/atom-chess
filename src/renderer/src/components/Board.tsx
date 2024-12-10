@@ -3,8 +3,8 @@ import {PieceInfo} from 'src/types';
 import styled from 'styled-components';
 import {getPiece} from '@renderer/assets/util/getPiece';
 import Promote from './Promote';
-import {LegacyRef, useEffect, useMemo, useRef} from 'react';
-import {ArcherContainer, ArcherContainerRef, ArcherElement} from 'react-archer';
+import {useMemo} from 'react';
+import {ArcherContainer, ArcherElement} from 'react-archer';
 
 type Props = {
   board: (PieceInfo | null)[][];
