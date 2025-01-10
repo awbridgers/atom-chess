@@ -22,6 +22,7 @@ import GameHeaders from './components/GameHeaders';
 import Save from './components/Save';
 import {ResultType} from '../../types';
 import EngineOptions from './components/EngineOptions';
+import { clr } from './assets/palette';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
@@ -693,7 +694,7 @@ const GameContainer = styled.div`
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background-color: #000000;
+  background-color: ${clr.background};
   min-width: 650px;
 `;
 

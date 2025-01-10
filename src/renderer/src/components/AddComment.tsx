@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import styled from 'styled-components'
-
+import {clr} from '../assets/palette'
 type Props = {
   message?: string
   add : (index: number, comment: string)=>void;
@@ -29,7 +29,7 @@ const Container = styled.div`
   transform: translate(-50%, -50%);
   width: 90%;
   height: 200px;
-  background-color: #001b75;
+  background-color: #119298;
   justify-content: center;
   z-index: 10;
   display: flex; 
@@ -37,7 +37,7 @@ const Container = styled.div`
   align-items: center;
   padding: 5px;
   border-radius: 8px;
-  color: white;
+  color: ${clr.selected};
 `;
 const TextBox = styled.textarea`
   width: 90%;

@@ -31,7 +31,7 @@ export type Game = {
     dateAdded: Date;
   }
 
-  export type OrderedGame = Game & {order: number};
+export type OrderedGame = Game & {order: number};
 export type GameDetails = {
   white: string;
   whiteElo: string;
@@ -41,4 +41,15 @@ export type GameDetails = {
   date: string;
   event: string;
   additional: [string,string][];
+}
+export type palette = {
+  light: string;
+  dark: string;
+  selected: string;
+  legal: string;
+  bestMove: string;
+  background: string;
+  highlighted: string;
+  previousMove: string;
+  text: string;
 }

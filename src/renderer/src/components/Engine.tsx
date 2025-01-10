@@ -4,6 +4,7 @@ import {PieceInfo, Variation} from 'src/types';
 import styled from 'styled-components';
 import Board from './Board';
 import {FaCaretDown, FaCaretUp, FaCog} from 'react-icons/fa';
+import {clr} from '../assets/palette'
 
 type Props = {
   value: string;
@@ -113,7 +114,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   color: white;
-  background-color: #1b1b1b;
+  background-color: ${clr.background};
   font-family: Arial, Helvetica, sans-serif;
   border: 2px solid white;
   box-sizing: border-box;
@@ -130,8 +131,7 @@ const Evaluation = styled.div`
   flex-flow: row nowrap;
   align-items: center;
   justify-content: space-around;
-  font-size: 40px;
-  background-color: #1a1a1a;
+  font-size: 40px;;
 `;
 const VarContainer = styled.div`
   display: flex;

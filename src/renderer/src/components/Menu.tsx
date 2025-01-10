@@ -7,6 +7,7 @@ import {
   FaInfoCircle,
 } from 'react-icons/fa';
 import { FaFolderOpen } from 'react-icons/fa6';
+import {clr} from '../assets/palette'
 
 type Props = {
   flipBoard: () => void;
@@ -31,22 +32,22 @@ const Menu = ({
   return (
     <Container>
       <Button title="Flip Board" onClick={flipBoard}>
-        <FaRetweet size={40} className="buttonIcon" />
+        <FaRetweet size={37} className="buttonIcon" />
       </Button>
       <Button title="Setup Game" onClick={setupGame}>
-        <FaPlus size={40} className="buttonIcon" />
+        <FaPlus size={37} className="buttonIcon" />
       </Button>
       <Button title="View Game List" onClick={showGameList}>
-        <FaFolderOpen size={40} className="buttonIcon" />
+        <FaFolderOpen size={37} className="buttonIcon" />
       </Button>
       <Button title="Save Game" onClick={saveGame}>
-        <FaSave size={40} className="buttonIcon" />
+        <FaSave size={37} className="buttonIcon" />
       </Button>
       <Button title="Toggle Arrows" onClick={toggleShowArrows}>
         <FaArrowCircleUp
-          size={40}
-          className="buttonIcon"
-          style={{color: showArrows ? 'green' : '#a3a3a3'}}
+          size={37}
+          className={showArrows ? 'buttonIconNoHighlight' : 'buttonIcon'}
+          //style={{color: showArrows ? '#397553' : '#a3a3a3'}}
         />
       </Button>
       <Button title="Game Info" onClick={showGameInfo}>
@@ -59,18 +60,22 @@ const Menu = ({
 const Container = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  background-color: #454545;
+  background-color: ${clr.background};
   justify-content: space-around;
+  width: 100%;
 `;
 const Button = styled.button`
   cursor: pointer;
-  background-color: #000000;
+  background-color: ${clr.background};
   border: 0px;
   .buttonIcon {
     color: #a3a3a3;
   }
   .buttonIcon:hover {
-    color: #ffffff;
+    color: #FFFCC6;
+  }
+  .buttonIconNoHighlight{
+    color: #397553
   }
 `;
 

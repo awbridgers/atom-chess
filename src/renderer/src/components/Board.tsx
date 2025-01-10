@@ -5,6 +5,7 @@ import {getPiece} from '@renderer/assets/util/getPiece';
 import Promote from './Promote';
 import {useMemo} from 'react';
 import {ArcherContainer, ArcherElement} from 'react-archer';
+import { clr } from '../assets/palette';
 
 type Props = {
   board: (PieceInfo | null)[][];
@@ -77,7 +78,7 @@ const Board = ({
       </GameInfo>}
       {promoInfo && cancelPromo && <PromoScreen onClick={cancelPromo} />}
       <ArcherContainer
-        strokeColor="#4977f75d"
+        strokeColor={clr.bestMove}
         strokeWidth={3}
         svgContainerStyle={{zIndex: 4}}
         endShape={{arrow: {arrowLength: 5, arrowThickness: 5}}}
@@ -172,8 +173,8 @@ const SquareWrapper = styled.div<{
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: ${(props) => (props.$light ? '#EDD6B0' : '#B88762')};
-  outline: ${(props) => (props.$selected ? '4px solid yellow' : '0px')};
+  background-color: ${(props) => (props.$light ? clr.light : clr.dark)};
+  outline: ${(props) => (props.$selected ? `4px solid ${clr.selected}` : '0px')};
   outline-offset: -4px;
   .file {
     position: absolute;
@@ -199,8 +200,8 @@ const Row = styled.div`
   flex-direction: row;
 `;
 const Highlighted = styled.div`
-  z-index: 2;
-  background-color: rgba(255, 0, 0, 0.485);
+  z-index: 3;
+  background-color: ${clr.highlighted};
   position: absolute;
   top: 0px;
   bottom: 0px;
@@ -209,7 +210,7 @@ const Highlighted = styled.div`
 `;
 const PreviousMove = styled.div`
   z-index: 2;
-  background-color: rgba(242, 251, 80, 0.423);
+  background-color: ${clr.previousMove};
   position: absolute;
   top: 0px;
   bottom: 0px;
@@ -218,7 +219,7 @@ const PreviousMove = styled.div`
   pointer-events: none;
 `;
 const LegalMove = styled.div`
-  background-color: rgba(18, 255, 129, 0.548);
+  background-color: ${clr.legal};
   border-radius: 40px;
   height: 20%;
   width: 20%;
@@ -244,7 +245,7 @@ const NamesContainer = styled.div`
   font-size: 20px;
   align-self: center;
   overflow: hidden;
-  color: white;
+  color: ${clr.text};
   white-space: nowrap;
   margin: auto;
   text-align: center;

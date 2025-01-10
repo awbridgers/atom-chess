@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import {clr} from '../assets/palette'
 
 type Props = {
   items: {name: string; onClick: (index: number) => void; disabled?: boolean}[];
@@ -33,7 +34,7 @@ const Container = styled.div`
   justify-content: space-around;
 `;
 const MenuContainer = styled.div`
-  background-color: #a3a3a3;
+  background-color: ${clr.light};
   border-radius: 6px;
 `;
 const MenuItem = styled.div<{$disabled?: boolean}>`

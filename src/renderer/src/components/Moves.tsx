@@ -4,6 +4,7 @@ import {MoveHistory} from 'src/types';
 import styled from 'styled-components';
 import ContextMenu from './ContextMenu';
 import AddComment from './AddComment';
+import {clr} from '../assets/palette'
 
 type Props = {
   moveList: MoveHistory[];
@@ -127,7 +128,7 @@ const Moves = ({moveList, currentMove, jump, addComment, deleteComment}: Props) 
 const Container = styled.div`
   display: flex;
   height: 100%;
-  background-color: #1b1b1b;
+  background-color: #02131B;
   flex-flow: column;
   width: 100%;
   overflow-x: hidden;
@@ -148,10 +149,10 @@ const San = styled.div<{$highlighted: boolean}>`
   font-size: 24px;
   padding: 0px 5px;
   font-weight: bold;
-  background-color: ${(props) => (props.$highlighted ? '#529aff4d' : 'none')};
+  background-color: ${(props) => (props.$highlighted ? '#119298' : 'none')};
   cursor: pointer;
   &:hover {
-    background-color: #529affc9;
+    background-color: #82C3B3;
   }
 `;
 const HalfMove = styled.div`
@@ -171,7 +172,7 @@ const MoveNumber = styled.div`
   align-items: flex-start;
   align-self: stretch;
   font-size: 16px;
-  background-color: #303030;
+  background-color: ${clr.background};
   width: 8%;
 `;
 const Comment = styled.div`
@@ -179,7 +180,7 @@ const Comment = styled.div`
   overflow: hidden;
   max-height: 100px;
   padding: 2px 5px;
-  color: #09ff00;
+  color: #FABD3A;
 `;
 
 const DeleteAlert = styled.div`

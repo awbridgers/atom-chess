@@ -1,7 +1,7 @@
 import {app, shell, BrowserWindow, ipcMain} from 'electron';
 import {join} from 'path';
 import {electronApp, optimizer, is} from '@electron-toolkit/utils';
-import icon from '../../resources/icon.png?asset';
+import icon from '../../resources/atomicLogo.png?asset';
 const stockfish = require('stockfish.wasm');
 import {Game} from '../types'
 import fs from 'fs';
@@ -28,6 +28,7 @@ function createWindow(): BrowserWindow {
     width: 900,
     height: 670,
     show: false,
+    backgroundColor: '#000000',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? {icon} : {}),
     webPreferences: {

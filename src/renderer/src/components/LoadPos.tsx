@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import styled from 'styled-components';
+import {clr} from '../assets/palette'
 
 type Props = {
   load: (pos: string,type: 'fen'|'pgn', key: string) => void;
@@ -30,8 +31,8 @@ const LoadPos = ({load,cancel}: Props) => {
         onChange={(e) => setPgn(e.target.value)}
       />
       <ButtonContainer>
-      <Button onClick={()=>load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 'fen', '')}>New Game</Button>
-      <Button onClick = {loadPosition}>Load Position</Button>
+      <Button onClick={()=>load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 'fen', '')}>New</Button>
+      <Button onClick = {loadPosition}>Load</Button>
       <Button onClick = {cancel}>Cancel</Button>
       </ButtonContainer>
     </Container>
@@ -43,7 +44,7 @@ const Container = styled.div`
   width: 100%;
   display: flex;
   flex-flow: column;
-  background-color: blue;
+  background-color: #001b75;
 `;
 const FEN = styled.input`
   width: 100%;
@@ -59,9 +60,14 @@ const PGN = styled.textarea`
   box-sizing: border-box;
 `;
 const Button = styled.button`
-  height: 35px;
-  width: 90px;
+   height: 40px;
+  width: 100px;
+  margin: 5px;
   border-radius: 8px;
+  font-size: 18px;
+  &:hover{
+    background-color: #c9c9c9;
+  }
   `;
   const ButtonContainer = styled.div`
   display: flex;

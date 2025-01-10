@@ -134,7 +134,7 @@ const Header = styled.th`
   cursor: pointer;
 `;
 const Row = styled.tr<{$highlighted?: boolean}>`
-  background-color: ${(props) => (props.$highlighted ? '#0e7800' : 'none')};
+  background-color: ${(props) => (props.$highlighted ? '#397553' : 'none')};
   &:hover {
     background-color: ${(props) => (props.$highlighted ? 'none' : '#045858')};
   }
