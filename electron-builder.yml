@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: chess-engine
+appId: com.awbridgers.atom-chess
+productName: Atom Chess
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: chess-engine
+  executableName: Atom Chess
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import styled from 'styled-components';
-import {clr} from '../assets/palette'
+// import {clr} from '../assets/palette'
 
 type Props = {
   load: (pos: string,type: 'fen'|'pgn', key: string) => void;
