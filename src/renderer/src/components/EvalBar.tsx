@@ -23,7 +23,7 @@ const Container = styled.div<{$height:number}>`
   background-color: rgba(71, 71, 71, 0.7);
   height: ${(props)=>props.$height}px;
   width: 20px;
-  border: 2px solid black;
+  /* border: 2px solid black; */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -38,7 +38,7 @@ const Filler = styled.div<{$height:number}>`
 const MidLine = styled.div`
   width: 20px;
   height: 5px;
-  background-color: rgba(156, 3, 3, 0.5);
+  background-color: #D54851CC;
   position: absolute;
   margin: auto;
   left:0;
