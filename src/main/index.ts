@@ -26,7 +26,7 @@ function createWindow(): BrowserWindow {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 670,
+    height: 600,
     show: false,
     backgroundColor: '#000000',
     autoHideMenuBar: true,
@@ -81,7 +81,6 @@ app.whenReady().then(() => {
       if (line.includes('bestmove')) {
         //we want to pass the top 3 moves and variations back to the renderer
         //console.log(res)
-        //TODO: CURRENTLY WORKING ON GETTING THE ENGINE TO SEND IF THE GAME IS ENDED IN MATE
         const data = res.slice(-3).map((evaluation) => {
           const scoreLine = evaluation.match(/cp -?[\d]+/);
           const mateLine = evaluation.match(/mate -?[\d]+/);

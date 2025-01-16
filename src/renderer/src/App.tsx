@@ -15,7 +15,7 @@ import Engine from './components/Engine';
 import Moves from './components/Moves';
 import LoadPos from './components/LoadPos';
 import Menu from './components/Menu';
-import {useSquareSize} from './hooks/useSquareSize';
+import {useScreenSize} from './hooks/useScreenSize';
 import GameList from './components/GameList';
 import {v6 as uuidv6} from 'uuid';
 import GameHeaders from './components/GameHeaders';
@@ -79,7 +79,8 @@ function App(): JSX.Element {
   const [engineOn, setEngineOn] = useState<boolean>(true)
   const [depth, setDepth] = useState<number>(16);
   const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false)
-  const squareSize = useSquareSize();
+  const screenSize = useScreenSize();
+  const squareSize = Math.max(Math.min(((screenSize.height - 51)/8), screenSize.width/13), 60)
   const storedIndex = useRef<number | null>(null);
   const gameKey = useRef<string|null>(null)
   const handleRightClick = (id) => {
@@ -336,6 +337,8 @@ function App(): JSX.Element {
     const filtered = fullGames.filter((x) => x.key !== key);
     //save the list as the new list
     const res = await window.api.saveList(filtered);
+    console.log(res)
+    // TODO: Games list is not being refreshed when an item is deleted
     if (res) {
       setGameList(filtered);
     }
