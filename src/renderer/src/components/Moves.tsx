@@ -190,7 +190,7 @@ const DeleteAlert = styled.div`
   transform: translate(-50%, -50%);
   width: 90%;
   min-height: 100px;
-  background-color: #001b75;
+  background-color: #D03731;
   justify-content: space-between;
   z-index: 10;
   display: flex; 

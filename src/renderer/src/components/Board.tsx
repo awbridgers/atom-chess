@@ -72,7 +72,7 @@ const Board = ({
   return (
     <Container>
       {white && black && <GameInfo>
-        <NamesContainer style = {{width: squareHeight*8}}>
+        <NamesContainer style = {{width: squareHeight*8, fontSize: `${white}${black}`.length > 46 ? '12px' : '20px'}}>
           <Name>{white}</Name> ({whiteElo}) -- <Name>{black}</Name> ({blackElo})
         </NamesContainer>
       </GameInfo>}
@@ -240,6 +240,7 @@ const GameInfo = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 50px;
 `;
 const NamesContainer = styled.div`
   font-size: 20px;
@@ -249,6 +250,7 @@ const NamesContainer = styled.div`
   white-space: nowrap;
   margin: auto;
   text-align: center;
+
 `;
 const Name = styled.div`
   font-weight: bold;

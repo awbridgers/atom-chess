@@ -59,7 +59,8 @@ useEffect(()=>{
           body="Are you sure you want to remove this game from the list?"
           onAccept={handleDelete}
           onCancel={()=>setShowDeleteAlert(false)}
-          bgColor = {'green'}
+          bgColor = {'#D03731'}
+          confirm
         />
       )}
       <Scrollbars style = {{flex:1}}>

@@ -3,7 +3,7 @@ import {useState, useEffect} from 'react';
 
 
 //
-export const useSquareSize = () => {
+export const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -17,5 +17,5 @@ export const useSquareSize = () => {
     return ()=>window.removeEventListener('resize', handleResize)
   },[]);
 
-  return Math.max(Math.min(screenSize.width/14, screenSize.height/9), 80)
+  return {height: screenSize.height, width: screenSize.width}
 };
