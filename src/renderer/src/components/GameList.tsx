@@ -1,7 +1,7 @@
 import {Game, OrderedGame} from 'src/types';
 import styled from 'styled-components';
 import Scrollbars from 'react-custom-scrollbars-2';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Alert from './Alert';
 
 type Props = {
@@ -11,14 +11,20 @@ type Props = {
   deleteGame: (key: string) => void;
 };
 
-type Sort = 'order'|'result'|'white'|'black'
+type Sort = 'dateAdded'|'result'|'white'|'black'
 
 const GameList = ({list, open, close, deleteGame}: Props) => {
   const [selected, setSelected] = useState<Game | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState<boolean>(false);
-  const [sortedList, setSortedList] = useState<OrderedGame[]>(list.map((x,i)=>({...x,order: i})))
-  const [sortType, setSortType] = useState<Sort>('order')
+  const [sortType, setSortType] = useState<Sort>('dateAdded')
   const [sortDecreasing, setSortDecreasing] = useState<boolean>(true);
+  const sortedList = useMemo<Game[]>(()=>{
+    const newList = [...list];
+    newList.sort((a,b)=>a[sortType] > b[sortType] ? 1 : b[sortType] > a[sortType] ?  -1 : 0)
+    if(!sortDecreasing) newList.reverse();
+    return newList;
+  },[sortType, list, sortDecreasing])
+
   const handleDelete = ()=>{
     if(selected){
       deleteGame(selected.key);
@@ -32,20 +38,16 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
     }
   }
   const sortList = (type: Sort)=>{
-    //if we click on the same sort while the list is incrseasing, return to defualt sort
+    //if we click on the same sort while the list is incrseasing, return to default sort
     if((type === sortType) && !sortDecreasing){
       //revert to default sort
-      setSortType('order');
+      setSortType('dateAdded');
       setSortDecreasing(true);
-      setSortedList(prev=>[...prev].sort((a,b)=>a.order - b.order))
     }else if(type === sortType){
       setSortDecreasing(false);
-      setSortedList(prev=>[...prev].reverse())
     }else{
       setSortType(type);
       setSortDecreasing(true);
-      setSortedList(prev=>[...prev].sort((a,b)=>a[type] > b[type] ? 1 : b[type] > a[type] ?  -1 : 0))
-      
     }
   }
 useEffect(()=>{
@@ -67,7 +69,7 @@ useEffect(()=>{
       <Table>
         <tbody>
           <tr>
-            <Header onClick = {()=>sortList('order')}>No.</Header>
+            <Header onClick = {()=>sortList('dateAdded')}>Added</Header>
             <Header onClick = {()=>sortList('white')}>White</Header>
             <Header onClick = {()=>sortList('black')}>Black</Header>
             <Header onClick = {()=>sortList('result')}>Result</Header>
@@ -79,7 +81,7 @@ useEffect(()=>{
                 onClick={() => setSelected(!selected ? game : selected.key ===game.key ? null : game)}
                 $highlighted={selected ? game.key === selected.key : false}
               >
-                <Section>{game.order + 1}</Section>
+                <Section>{game.dateAdded.toLocaleDateString('en-US')}</Section>
                 <Section>{game.white}</Section>
                 <Section>{game.black}</Section>
                 <Section>{game.result}</Section>

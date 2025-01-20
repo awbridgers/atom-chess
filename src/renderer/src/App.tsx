@@ -329,8 +329,9 @@ function App(): JSX.Element {
   };
   const loadGames = async (database: string) => {
     const {data} = await window.api.loadList(database);
-    data.sort((a,b)=>a.dateAdded.valueOf()-b.dateAdded.valueOf());
-    setGameList(data);
+    const games = data.map((x)=>({...x, dateAdded: new Date(x.dateAdded)}))
+    games.sort((a,b)=>a.dateAdded.getTime()-b.dateAdded.getTime());
+    setGameList(games);
   };
   const deleteGame = async (key: string) => {
     const fullGames = [...gameList];
@@ -368,21 +369,22 @@ function App(): JSX.Element {
           chessGame.header(newKey, gameInfo[key])
         }
       })
-      //
+      //add the game to the list, or update an old game.
+      //first determine if this game is alrady stored
+      const oldList = [...gameList];
       const dataKey = gameKey.current ? gameKey.current : uuidv6();
+      const prevIndex = oldList.findIndex((x) => x.key === dataKey);
+
       const data: Game = {
         white: gameInfo.white,
         black: gameInfo.black,
         result: gameInfo.result,
         pgn: chessGame.pgn(),
         date: new Date(gameInfo.date),
-        dateAdded: new Date(),
+        dateAdded: prevIndex === -1 ? new Date() : oldList[prevIndex].dateAdded,
         key: dataKey
       };
-      const load = await window.api.loadList('myGames');
-      const oldList = load.data;
       //if this game already exists, update it;
-      const prevIndex = oldList.findIndex((x) => x.key === data.key);
       if (prevIndex !== -1) {
         //this game already exists
         oldList[prevIndex] = data;
@@ -575,8 +577,8 @@ function App(): JSX.Element {
   }, []);
   
   useEffect(() => {
-    //console.log(history, historyIndex);
-  }, [history, historyIndex]);
+    console.log(gameList)
+  }, [gameList]);
   return (
     <Container>
       <GameContainer>
