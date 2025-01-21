@@ -1,7 +1,7 @@
 import {Game, OrderedGame} from 'src/types';
 import styled from 'styled-components';
 import Scrollbars from 'react-custom-scrollbars-2';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Alert from './Alert';
 
 type Props = {
@@ -11,46 +11,50 @@ type Props = {
   deleteGame: (key: string) => void;
 };
 
-type Sort = 'order'|'result'|'white'|'black'
+type Sort = 'dateAdded' | 'result' | 'white' | 'black';
 
 const GameList = ({list, open, close, deleteGame}: Props) => {
   const [selected, setSelected] = useState<Game | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState<boolean>(false);
-  const [sortedList, setSortedList] = useState<OrderedGame[]>(list.map((x,i)=>({...x,order: i})))
-  const [sortType, setSortType] = useState<Sort>('order')
+  const [sortType, setSortType] = useState<Sort>('dateAdded');
   const [sortDecreasing, setSortDecreasing] = useState<boolean>(true);
-  const handleDelete = ()=>{
-    if(selected){
+  const sortedList = useMemo<Game[]>(() => {
+    const newList = [...list];
+    newList.sort((a, b) =>
+      a[sortType] > b[sortType] ? 1 : b[sortType] > a[sortType] ? -1 : 0
+    );
+    if (!sortDecreasing) newList.reverse();
+    return newList;
+  }, [sortType, list, sortDecreasing]);
+
+  const handleDelete = () => {
+    if (selected) {
       deleteGame(selected.key);
       setShowDeleteAlert(false);
-      setSelected(null)
-    } 
-  }
-  const handleOpen = () =>{
-    if(selected){
-      open(selected.pgn,selected.key);
+      setSelected(null);
     }
-  }
-  const sortList = (type: Sort)=>{
-    //if we click on the same sort while the list is incrseasing, return to defualt sort
-    if((type === sortType) && !sortDecreasing){
+  };
+  const handleOpen = () => {
+    if (selected) {
+      open(selected.pgn, selected.key);
+    }
+  };
+  const sortList = (type: Sort) => {
+    //if we click on the same sort while the list is incrseasing, return to default sort
+    if (type === sortType && !sortDecreasing) {
       //revert to default sort
-      setSortType('order');
+      setSortType('dateAdded');
       setSortDecreasing(true);
-      setSortedList(prev=>[...prev].sort((a,b)=>a.order - b.order))
-    }else if(type === sortType){
+    } else if (type === sortType) {
       setSortDecreasing(false);
-      setSortedList(prev=>[...prev].reverse())
-    }else{
+    } else {
       setSortType(type);
       setSortDecreasing(true);
-      setSortedList(prev=>[...prev].sort((a,b)=>a[type] > b[type] ? 1 : b[type] > a[type] ?  -1 : 0))
-      
     }
-  }
-useEffect(()=>{
-  //change the sort
-}, [sortType, sortDecreasing])
+  };
+  useEffect(() => {
+    //change the sort
+  }, [sortType, sortDecreasing]);
   return (
     <Container>
       {showDeleteAlert && (
@@ -58,35 +62,41 @@ useEffect(()=>{
           title="Delete Game?"
           body="Are you sure you want to remove this game from the list?"
           onAccept={handleDelete}
-          onCancel={()=>setShowDeleteAlert(false)}
-          bgColor = {'#D03731'}
+          onCancel={() => setShowDeleteAlert(false)}
+          bgColor={'#D03731'}
           confirm
         />
       )}
-      <Scrollbars style = {{flex:1}}>
-      <Table>
-        <tbody>
-          <tr>
-            <Header onClick = {()=>sortList('order')}>No.</Header>
-            <Header onClick = {()=>sortList('white')}>White</Header>
-            <Header onClick = {()=>sortList('black')}>Black</Header>
-            <Header onClick = {()=>sortList('result')}>Result</Header>
-          </tr>
-       
+      <Scrollbars style={{flex: 1}}>
+        <Table>
+          <thead>
+            <tr>
+              <Header onClick={() => sortList('dateAdded')}>Added</Header>
+              <Header onClick={() => sortList('white')}>White</Header>
+              <Header onClick={() => sortList('black')}>Black</Header>
+              <Header onClick={() => sortList('result')}>Result</Header>
+            </tr>
+          </thead>
+          <tr></tr>
+          <tbody>
             {sortedList.map((game) => (
               <Row
                 key={game.key}
-                onClick={() => setSelected(!selected ? game : selected.key ===game.key ? null : game)}
+                onClick={() =>
+                  setSelected(
+                    !selected ? game : selected.key === game.key ? null : game
+                  )
+                }
                 $highlighted={selected ? game.key === selected.key : false}
               >
-                <Section>{game.order + 1}</Section>
+                <Section>{game.dateAdded.toLocaleDateString('en-US')}</Section>
                 <Section>{game.white}</Section>
                 <Section>{game.black}</Section>
                 <Section>{game.result}</Section>
               </Row>
             ))}
-        </tbody>
-      </Table>
+          </tbody>
+        </Table>
       </Scrollbars>
       <ButtonContainer>
         <Button
@@ -97,7 +107,7 @@ useEffect(()=>{
           Delete
         </Button>
         <Button onClick={close}>Close</Button>
-        <Button $disabled={!selected} disabled={!selected} onClick ={handleOpen} >
+        <Button $disabled={!selected} disabled={!selected} onClick={handleOpen}>
           Open
         </Button>
       </ButtonContainer>
@@ -115,7 +125,6 @@ const Container = styled.div`
   background-color: #001b75;
   justify-content: space-around;
   z-index: 10;
-  padding: 5px;
   border-radius: 8px;
   color: white;
   display: flex;
@@ -128,11 +137,15 @@ const Section = styled.td<{$title?: boolean}>`
   text-align: center;
   cursor: pointer;
   user-select: none;
-  
-  
 `;
 const Header = styled.th`
   cursor: pointer;
+  position: sticky;
+  top: 0px;
+  background-color: #119298;
+  padding: 5px;
+  font-size: 18px;
+
 `;
 const Row = styled.tr<{$highlighted?: boolean}>`
   background-color: ${(props) => (props.$highlighted ? '#397553' : 'none')};
@@ -141,8 +154,8 @@ const Row = styled.tr<{$highlighted?: boolean}>`
   }
 `;
 const Table = styled.table`
-  width:99%;
-  border-collapse:collapse;
+  width: 100%;
+  border-collapse: collapse;
 `;
 const ButtonContainer = styled.div`
   display: flex;
