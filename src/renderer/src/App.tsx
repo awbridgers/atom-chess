@@ -654,6 +654,7 @@ function App(): JSX.Element {
             black={gameInfo.black}
             whiteElo={gameInfo.whiteElo}
             blackElo={gameInfo.blackElo}
+            result={gameInfo.result}
           />
         </BoardContainer>
         <GameInfo $height={squareSize * 8}>
