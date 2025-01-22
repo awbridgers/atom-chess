@@ -1,5 +1,5 @@
 import {Color, Move, PieceSymbol, Square} from 'chess.js';
-import {PieceInfo} from 'src/types';
+import {PieceInfo, ResultType} from 'src/types';
 import styled from 'styled-components';
 import {getPiece} from '@renderer/assets/util/getPiece';
 import Promote from './Promote';
@@ -13,6 +13,7 @@ type Props = {
   black?: string;
   whiteElo?: string;
   blackElo?: string;
+  result?: ResultType
   onClickSquare?: (id: Square) => void;
   selectedSquare?: Square | null;
   highlightedSquares?: Set<Square>;
@@ -53,6 +54,7 @@ const Board = ({
   black,
   whiteElo,
   blackElo,
+  result
 }: Props) => {
   const getColor = (id) => {
     const rank = +id[1];
@@ -72,8 +74,8 @@ const Board = ({
   return (
     <Container>
       {white && black && <GameInfo>
-        <NamesContainer style = {{width: squareHeight*8, fontSize: `${white}${black}`.length > 46 ? '12px' : '20px'}}>
-          <Name>{white}</Name> ({whiteElo}) -- <Name>{black}</Name> ({blackElo})
+        <NamesContainer style = {{width: squareHeight*8, fontSize: `${white}${black}`.length > 35 ? '14px' : '20px'}}>
+          <><Name>{white}</Name> ({whiteElo})  {result && <Result>{result}</Result>} <Name>{black}</Name> ({blackElo}) </>
         </NamesContainer>
       </GameInfo>}
       {promoInfo && cancelPromo && <PromoScreen onClick={cancelPromo} />}
@@ -256,3 +258,9 @@ const Name = styled.div`
   font-weight: bold;
   display: inline;
 `;
+const Result = styled.div`
+  font-weight: bold;
+  color: #FFFC77;
+  display: inline;
+  margin: 0px 5px
+`
