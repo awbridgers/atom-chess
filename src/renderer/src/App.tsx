@@ -255,7 +255,7 @@ function App(): JSX.Element {
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
-  const loadPosition = (pos: string, type: 'fen' | 'pgn', key: string) => {
+  const loadPosition = (pos: string, type: 'fen' | 'pgn', key: string, moveNumber?: number) => {
     if (type === 'pgn') {
       try {
         //load the game
@@ -290,13 +290,19 @@ function App(): JSX.Element {
         setGameInfo(newGameDetails);
 
         //set the history
-        setHistoryIndex(newHistory.length - 1);
-        setHistory(newHistory);
-        setPlayBackMode(true);
-        setMoveSquare({
-          to: newHistory[newHistory.length - 1].to,
-          from: newHistory[newHistory.length - 1].from,
-        });
+        if(moveNumber!== undefined){
+          jump(moveNumber, true);
+        }
+        else{
+          setHistoryIndex(newHistory.length-1);
+          setHistory(newHistory);
+          setPlayBackMode(true);
+          setMoveSquare({
+            to: newHistory[newHistory.length-1].to,
+            from: newHistory[newHistory.length-1].from,
+          });
+        }
+        
       } catch (e) {
         console.log('there was an error' + e);
       }
@@ -332,6 +338,7 @@ function App(): JSX.Element {
     const games = data.map((x)=>({...x, dateAdded: new Date(x.dateAdded)}))
     games.sort((a,b)=>a.dateAdded.getTime()-b.dateAdded.getTime());
     setGameList(games);
+    return true;
   };
   const deleteGame = async (key: string) => {
     const fullGames = [...gameList];
@@ -339,7 +346,6 @@ function App(): JSX.Element {
     //save the list as the new list
     const res = await window.api.saveList(filtered);
     console.log(res)
-    // TODO: Games list is not being refreshed when an item is deleted
     if (res) {
       setGameList(filtered);
     }
@@ -359,7 +365,7 @@ function App(): JSX.Element {
       //add the headers to the pgn
       Object.keys(gameInfo).forEach((key)=>{
         if(key === 'additional'){
-          console.log(gameInfo[key])
+          //console.log(gameInfo[key])
           for(const [key, value] of gameInfo.additional){
             const newKey = key[0].toUpperCase() + key.slice(1);
             chessGame.header(newKey, value)
@@ -391,12 +397,15 @@ function App(): JSX.Element {
       } else {
         oldList.push(data);
       }
+      //save the list
       const res = await window.api.saveList(oldList);
+      //now load the changes made to this game
       if (res) {
         console.log('save successful');
         await loadGames('myGames');
         setshowSaveAlert(false);
         gameKey.current = data.key;
+        loadPosition(data.pgn, 'pgn', data.key, historyIndex)
       }
     }
   };
@@ -575,10 +584,6 @@ function App(): JSX.Element {
     //load the games from the list
     loadGames('myGames');
   }, []);
-  
-  useEffect(() => {
-    console.log(gameList)
-  }, [gameList]);
   return (
     <Container>
       <GameContainer>
