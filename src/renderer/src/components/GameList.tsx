@@ -1,4 +1,4 @@
-import {Game, OrderedGame} from 'src/types';
+import {Game} from 'src/types';
 import styled from 'styled-components';
 import Scrollbars from 'react-custom-scrollbars-2';
 import {useEffect, useMemo, useState} from 'react';

@@ -696,7 +696,7 @@ const Container = styled.div`
   flex-flow: column;
   align-items: center;
   justify-content: center;
-  background-color: #000000;
+  background-color: #ffffff;
   min-width: 650px;
   font-family: Arial, Helvetica, sans-serif;
 `;

@@ -14,7 +14,7 @@ asarUnpack:
 win:
   executableName: Atom Chess
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}-win32-${version}.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
@@ -39,5 +39,5 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  protocol: https

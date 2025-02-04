@@ -1,10 +1,13 @@
 {
   "name": "atom-chess",
-  "version": "1.2.0",
+  "version": "2.0.2",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "Adam Bridgers",
-  "homepage": "https://electron-vite.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/awbridgers/atom-chess.git"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -18,12 +21,16 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "publish": "electron-builder --win -p always"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "chess.js": "https://github.com/awbridgers/chess.js.git#addCommentAtFEN",
+    "electron-log": "^5.3.0",
+    "electron-progressbar": "^2.2.1",
+    "electron-updater": "^6.3.9",
     "moment": "^2.30.1",
     "react-archer": "^4.4.0",
     "react-custom-scrollbars-2": "^4.5.0",
@@ -33,6 +40,7 @@
     "stockfish": "^16.0.0",
     "stockfish.wasm": "^0.10.0",
     "styled-components": "^6.1.11",
+    "update-electron-app": "^3.1.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
