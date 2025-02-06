@@ -75,6 +75,7 @@ function createWindow(): BrowserWindow {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function()  {
+  log.info('ready')
   autoUpdater.checkForUpdatesAndNotify();
 });
 app.whenReady().then(() => {
@@ -87,7 +88,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
+  
   // IPC test
   ipcMain.on('ping', () => console.log('pong'));
 
