@@ -5,21 +5,20 @@ import icon from '../../resources/atomicLogo.png?asset';
 const stockfish = require('stockfish.wasm');
 import {Game} from '../types'
 import fs from 'fs';
-import electronUpdater, { type AppUpdater } from 'electron-updater';
-import log from 'electron-log'
+import electronUpdater, {AppUpdater} from 'electron-updater';
+import log from 'electron-log/main'
+
 
 export function getAutoUpdater(): AppUpdater {
   // Using destructuring to access autoUpdater due to the CommonJS module of 'electron-updater'.
   // It is a workaround for ESM compatibility issues, see https://github.com/electron-userland/electron-builder/issues/7976.
   const { autoUpdater } = electronUpdater;
+  log.info('Test')
+  autoUpdater.logger = log;
+  autoUpdater.logger.info('Checking for update')
+  autoUpdater.checkForUpdatesAndNotify();
   return autoUpdater;
 }
-const autoUpdater = getAutoUpdater();
-log.transports.file.level = 'info'
-autoUpdater.logger = log;
-log.info('App starting...');
-
-
 
 
 
@@ -74,10 +73,9 @@ function createWindow(): BrowserWindow {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', function()  {
-  log.info('ready')
-  autoUpdater.checkForUpdatesAndNotify();
-});
+app.on('ready', ()=>{
+  getAutoUpdater();
+})
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
