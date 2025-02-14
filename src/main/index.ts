@@ -14,6 +14,7 @@ export function getAutoUpdater(): AppUpdater {
   // It is a workaround for ESM compatibility issues, see https://github.com/electron-userland/electron-builder/issues/7976.
   const { autoUpdater } = electronUpdater;
   log.info('Test')
+
   autoUpdater.logger = log;
   autoUpdater.logger.info('Checking for update')
   autoUpdater.checkForUpdatesAndNotify();

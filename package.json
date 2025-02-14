@@ -1,6 +1,6 @@
 {
   "name": "atom-chess",
-  "version": "2.1.1",
+  "version": "2.1.3",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "Adam Bridgers",
@@ -22,7 +22,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "publish": "electron-builder --win -p always"
+    "publish": "npm run build && electron-builder --win -p always"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
