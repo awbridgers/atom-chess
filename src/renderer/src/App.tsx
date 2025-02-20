@@ -22,14 +22,16 @@ import GameHeaders from './components/GameHeaders';
 import Save from './components/Save';
 import {ResultType} from '../../types';
 import EngineOptions from './components/EngineOptions';
-import { clr } from './assets/palette';
+import {clr} from './assets/palette';
+import Banner from './components/Banner';
+import Alert from './components/Alert';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
   minimumFractionDigits: 2,
 });
 //const startPos = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-const initGameInfo:GameDetails = {
+const initGameInfo: GameDetails = {
   white: 'White',
   black: 'Black',
   whiteElo: '0',
@@ -38,8 +40,7 @@ const initGameInfo:GameDetails = {
   date: '',
   event: '',
   additional: [],
-}
-
+};
 
 function App(): JSX.Element {
   const chess = useRef(new Chess());
@@ -71,18 +72,26 @@ function App(): JSX.Element {
   const [showArrows, setShowArrows] = useState<boolean>(true);
   const [showSetup, setShowSetup] = useState<boolean>(false);
   const [gameList, setGameList] = useState<Game[]>([]);
-  const [gameInfo, setGameInfo] = useState<GameDetails>({...initGameInfo, additional:[]});
+  const [gameInfo, setGameInfo] = useState<GameDetails>({
+    ...initGameInfo,
+    additional: [],
+  });
   const [showGameList, setShowGameList] = useState<boolean>(false);
   const [playBackMode, setPlayBackMode] = useState<boolean>(false);
   const [showGameInfo, setShowGameInfo] = useState<boolean>(false);
   const [showSaveAlert, setshowSaveAlert] = useState<boolean>(false);
-  const [engineOn, setEngineOn] = useState<boolean>(true)
+  const [engineOn, setEngineOn] = useState<boolean>(true);
   const [depth, setDepth] = useState<number>(16);
-  const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false)
+  const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false);
+  const [canUpdate, setCanUpdate] = useState<boolean>(true);
+  const [showUpdateAlert, setShowUpdateAlert] = useState<boolean>(false);
   const screenSize = useScreenSize();
-  const squareSize = Math.max(Math.min(((screenSize.height - 51)/8), screenSize.width/13), 60)
+  const squareSize = Math.max(
+    Math.min((screenSize.height - 51) / 8, screenSize.width / 13),
+    60
+  );
   const storedIndex = useRef<number | null>(null);
-  const gameKey = useRef<string|null>(null)
+  const gameKey = useRef<string | null>(null);
   const handleRightClick = (id) => {
     if (highlightedSquares.has(id)) {
       setHighlightedSquares((prev) => {
@@ -94,11 +103,21 @@ function App(): JSX.Element {
       setHighlightedSquares((prev) => new Set(prev).add(id));
     }
   };
-  const fetchEvaluation = useCallback((fen:string, turn: 'w'|'b')=>{
-    if(engineOn){
-      window.api.getEval(fen, turn, depth)
+  const fetchEvaluation = useCallback(
+    (fen: string, turn: 'w' | 'b') => {
+      if (engineOn) {
+        window.api.getEval(fen, turn, depth);
+      }
+    },
+    [engineOn, depth]
+  );
+  const update = (now: boolean) => {
+    if (now) {
+      //updateNow
+    } else {
+      //update on exit
     }
-  },[engineOn, depth]);
+  };
   const handleSelect = (id: Square) => {
     const squareInfo = chess.current.get(id);
     if (!selectedSquare) {
@@ -239,15 +258,14 @@ function App(): JSX.Element {
         setBestMoves(new Map());
         getEval = false;
       }
-      setBestMoves(new Map())
+      setBestMoves(new Map());
       setHistoryIndex(index);
       setBoard(chess.current.board());
       setMoveSquare({to, from});
       setSelectedSquare(null);
       setLegalMoves(new Map());
-      if(getEval){
+      if (getEval) {
         fetchEvaluation(chess.current.fen(), chess.current.turn());
-
       }
     },
     [history, fetchEvaluation]
@@ -255,7 +273,12 @@ function App(): JSX.Element {
   const toggleArrows = () => {
     setShowArrows(!showArrows);
   };
-  const loadPosition = (pos: string, type: 'fen' | 'pgn', key: string, moveNumber?: number) => {
+  const loadPosition = (
+    pos: string,
+    type: 'fen' | 'pgn',
+    key: string,
+    moveNumber?: number
+  ) => {
     if (type === 'pgn') {
       try {
         //load the game
@@ -276,7 +299,16 @@ function App(): JSX.Element {
           }
         }
         //get the headers
-        const {White, Black, WhiteElo, BlackElo, Date, Event, Result, ...additional} = chess.current.header()
+        const {
+          White,
+          Black,
+          WhiteElo,
+          BlackElo,
+          Date,
+          Event,
+          Result,
+          ...additional
+        } = chess.current.header();
         const newGameDetails: GameDetails = {
           white: White || 'White',
           black: Black || 'Black',
@@ -284,25 +316,23 @@ function App(): JSX.Element {
           blackElo: BlackElo || '0',
           date: Date || '',
           event: Event || '',
-          result: Result as ResultType || '*',
-          additional: Object.keys(additional).map(x=>[x, additional[x]]),
+          result: (Result as ResultType) || '*',
+          additional: Object.keys(additional).map((x) => [x, additional[x]]),
         };
         setGameInfo(newGameDetails);
 
         //set the history
-        if(moveNumber!== undefined){
+        if (moveNumber !== undefined) {
           jump(moveNumber, true);
-        }
-        else{
-          setHistoryIndex(newHistory.length-1);
+        } else {
+          setHistoryIndex(newHistory.length - 1);
           setHistory(newHistory);
           setPlayBackMode(true);
           setMoveSquare({
-            to: newHistory[newHistory.length-1].to,
-            from: newHistory[newHistory.length-1].from,
+            to: newHistory[newHistory.length - 1].to,
+            from: newHistory[newHistory.length - 1].from,
           });
         }
-        
       } catch (e) {
         console.log('there was an error' + e);
       }
@@ -313,7 +343,7 @@ function App(): JSX.Element {
         setHistory([]);
         setHistoryIndex(-1);
         setMoveSquare({to: null, from: null});
-        setGameInfo({...initGameInfo, additional:[]})
+        setGameInfo({...initGameInfo, additional: []});
         startPos.current = chess.current.fen();
         gameKey.current = null;
         setPlayBackMode(false);
@@ -321,7 +351,7 @@ function App(): JSX.Element {
         console.log(e);
       }
     }
-    if(key)gameKey.current = key;
+    if (key) gameKey.current = key;
     else gameKey.current = null;
     fetchEvaluation(chess.current.fen(), chess.current.turn());
     setPromoInfo(null);
@@ -335,8 +365,8 @@ function App(): JSX.Element {
   };
   const loadGames = async (database: string) => {
     const {data} = await window.api.loadList(database);
-    const games = data.map((x)=>({...x, dateAdded: new Date(x.dateAdded)}))
-    games.sort((a,b)=>a.dateAdded.getTime()-b.dateAdded.getTime());
+    const games = data.map((x) => ({...x, dateAdded: new Date(x.dateAdded)}));
+    games.sort((a, b) => a.dateAdded.getTime() - b.dateAdded.getTime());
     setGameList(games);
     return true;
   };
@@ -345,7 +375,7 @@ function App(): JSX.Element {
     const filtered = fullGames.filter((x) => x.key !== key);
     //save the list as the new list
     const res = await window.api.saveList(filtered);
-    console.log(res)
+    console.log(res);
     if (res) {
       setGameList(filtered);
     }
@@ -363,18 +393,18 @@ function App(): JSX.Element {
         if (comments) chessGame.setComment(comments);
       }
       //add the headers to the pgn
-      Object.keys(gameInfo).forEach((key)=>{
-        if(key === 'additional'){
+      Object.keys(gameInfo).forEach((key) => {
+        if (key === 'additional') {
           //console.log(gameInfo[key])
-          for(const [key, value] of gameInfo.additional){
+          for (const [key, value] of gameInfo.additional) {
             const newKey = key[0].toUpperCase() + key.slice(1);
-            chessGame.header(newKey, value)
+            chessGame.header(newKey, value);
           }
-        }else{
+        } else {
           const newKey = key[0].toUpperCase() + key.slice(1);
-          chessGame.header(newKey, gameInfo[key])
+          chessGame.header(newKey, gameInfo[key]);
         }
-      })
+      });
       //add the game to the list, or update an old game.
       //first determine if this game is alrady stored
       const oldList = [...gameList];
@@ -388,7 +418,7 @@ function App(): JSX.Element {
         pgn: chessGame.pgn(),
         date: new Date(gameInfo.date),
         dateAdded: prevIndex === -1 ? new Date() : oldList[prevIndex].dateAdded,
-        key: dataKey
+        key: dataKey,
       };
       //if this game already exists, update it;
       if (prevIndex !== -1) {
@@ -405,12 +435,10 @@ function App(): JSX.Element {
         await loadGames('myGames');
         setshowSaveAlert(false);
         gameKey.current = data.key;
-        loadPosition(data.pgn, 'pgn', data.key, historyIndex)
+        loadPosition(data.pgn, 'pgn', data.key, historyIndex);
       }
     }
   };
-  
-  
 
   //engine listener
   useEffect(() => {
@@ -498,18 +526,18 @@ function App(): JSX.Element {
     return () => window.api.removeEvalListener();
   }, []);
   //listen for engine on/off changes
-  useEffect(()=>{
-    if(engineOn){
-      fetchEvaluation(chess.current.fen(), chess.current.turn())
+  useEffect(() => {
+    if (engineOn) {
+      fetchEvaluation(chess.current.fen(), chess.current.turn());
       setShowArrows(true);
-    }else{
+    } else {
       setEvalText('Off');
       setVariations([]);
       setBestMoves(new Map());
       setShowArrows(false);
       setEvaluation(0);
     }
-  }, [engineOn, fetchEvaluation])
+  }, [engineOn, fetchEvaluation]);
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
       if (!showGameInfo && !showGameList && !showSaveAlert && !showSetup) {
@@ -586,6 +614,18 @@ function App(): JSX.Element {
   }, []);
   return (
     <Container>
+      <Banner
+        white={gameInfo.white}
+        black={gameInfo.black}
+        whiteElo={gameInfo.whiteElo}
+        blackElo={gameInfo.blackElo}
+        result={gameInfo.result}
+        squareSize={squareSize}
+        canUpdate={canUpdate}
+        update={update}
+        showUpdateAlert={setShowUpdateAlert}
+        hideUpdate={()=>setCanUpdate(false)}
+      />
       <GameContainer>
         <EvalBar height={squareSize * 8} score={evaluation} />
         <BoardContainer>
@@ -593,7 +633,7 @@ function App(): JSX.Element {
             <GameList
               list={gameList}
               close={() => setShowGameList(false)}
-              open={(pos:string, key: string)=>loadPosition(pos, 'pgn', key)}
+              open={(pos: string, key: string) => loadPosition(pos, 'pgn', key)}
               deleteGame={deleteGame}
             />
           )}
@@ -610,7 +650,7 @@ function App(): JSX.Element {
               blackElo={gameInfo.blackElo}
               rest={gameInfo.additional}
               event={gameInfo.event}
-              date = {gameInfo.date}
+              date={gameInfo.date}
               result={gameInfo.result}
               close={() => setShowGameInfo(false)}
             ></GameHeaders>
@@ -626,20 +666,32 @@ function App(): JSX.Element {
               event={gameInfo.event}
               date={gameInfo.date}
               result={gameInfo.result}
-              additional={gameInfo.additional.map(([header, info])=>`[${header} ${info}]`).join('')}
+              additional={gameInfo.additional
+                .map(([header, info]) => `[${header} ${info}]`)
+                .join('')}
             />
           )}
-          {
-            showEngineOptions && (
-              <EngineOptions 
-                active = {engineOn}
-                setActive={setEngineOn}
-                depth={depth}
-                setDepth={setDepth}
-                exit = {()=>setShowEngineOptions(false)}
-              />
-            )
-          }
+          {showEngineOptions && (
+            <EngineOptions
+              active={engineOn}
+              setActive={setEngineOn}
+              depth={depth}
+              setDepth={setDepth}
+              exit={() => setShowEngineOptions(false)}
+            />
+          )}
+          {showUpdateAlert && (
+            <Alert
+              title="Update Available"
+              body="Update to version xx.xx.xx is available. Would you like to install it?"
+              onCancel={() => setShowUpdateAlert(false)}
+              buttons={[
+                {text: 'Install Now', onClick: () => update(true), width:125, height: 50},
+                {text: 'Install on Exit', onClick: () => update(false), width:125, height: 50},
+                {text: 'Ignore', onClick: () => setShowUpdateAlert(false), width:125, height: 50},
+              ]}
+            />
+          )}
           <Board
             squareHeight={squareSize}
             onClickSquare={handleSelect}
@@ -655,11 +707,6 @@ function App(): JSX.Element {
             promote={movePiece}
             bestMoves={bestMoves}
             showArrows={showArrows}
-            white={gameInfo.white}
-            black={gameInfo.black}
-            whiteElo={gameInfo.whiteElo}
-            blackElo={gameInfo.blackElo}
-            result={gameInfo.result}
           />
         </BoardContainer>
         <GameInfo $height={squareSize * 8}>
@@ -667,8 +714,8 @@ function App(): JSX.Element {
             value={evalText}
             variations={variations}
             flipped={flippedBoard}
-            openOptions={()=>setShowEngineOptions(true)}
-            depth = {depth}
+            openOptions={() => setShowEngineOptions(true)}
+            depth={depth}
           />
           <Moves
             currentMove={historyIndex}
@@ -703,7 +750,6 @@ const Container = styled.div`
 
 const GameContainer = styled.div`
   display: flex;
-  align-items: flex-end;
   justify-content: center;
   background-color: ${clr.background};
   min-width: 650px;
@@ -733,4 +779,5 @@ const LoadDiv = styled.div`
   width: 75%;
   z-index: 5;
 `;
+
 export default App;

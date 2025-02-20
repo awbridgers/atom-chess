@@ -149,10 +149,10 @@ const San = styled.div<{$highlighted: boolean}>`
   font-size: 24px;
   padding: 0px 5px;
   font-weight: bold;
-  background-color: ${(props) => (props.$highlighted ? '#119298' : 'none')};
+  background-color: ${(props) => (props.$highlighted ? '#018298' : 'none')};
   cursor: pointer;
   &:hover {
-    background-color: #82C3B3;
+    background-color: #03829882;
   }
 `;
 const HalfMove = styled.div`

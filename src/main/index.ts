@@ -16,11 +16,12 @@ export function getAutoUpdater(): AppUpdater {
   log.info('Test')
 
   autoUpdater.logger = log;
-  autoUpdater.logger.info('Checking for update')
-  autoUpdater.checkForUpdatesAndNotify();
+  //autoUpdater.logger.info('Checking for update')
+  //autoUpdater.checkForUpdatesAndNotify();
   return autoUpdater;
 }
 
+const autoUpdater = getAutoUpdater();
 
 
 global.nextPos = null;
@@ -75,7 +76,12 @@ function createWindow(): BrowserWindow {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', ()=>{
-  getAutoUpdater();
+  //getAutoUpdater();
+  autoUpdater.logger?.info('App is ready');
+  autoUpdater.checkForUpdates().then((result)=>autoUpdater.logger?.info(result?.updateInfo))
+  // autoUpdater.on('update-available',()=>{
+  //   autoUpdater.logger?.info('update available')
+  // })
 })
 app.whenReady().then(() => {
   // Set app user model id for windows
