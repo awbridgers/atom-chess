@@ -25,6 +25,7 @@ import EngineOptions from './components/EngineOptions';
 import {clr} from './assets/palette';
 import Banner from './components/Banner';
 import Alert from './components/Alert';
+import { UpdateInfo } from 'electron-updater';
 
 const numFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
@@ -83,8 +84,9 @@ function App(): JSX.Element {
   const [engineOn, setEngineOn] = useState<boolean>(true);
   const [depth, setDepth] = useState<number>(16);
   const [showEngineOptions, setShowEngineOptions] = useState<boolean>(false);
-  const [canUpdate, setCanUpdate] = useState<boolean>(true);
+  const [canUpdate, setCanUpdate] = useState<boolean>(false);
   const [showUpdateAlert, setShowUpdateAlert] = useState<boolean>(false);
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo|undefined>(undefined)
   const screenSize = useScreenSize();
   const squareSize = Math.max(
     Math.min((screenSize.height - 51) / 8, screenSize.width / 13),
@@ -112,11 +114,9 @@ function App(): JSX.Element {
     [engineOn, depth]
   );
   const update = (now: boolean) => {
-    if (now) {
-      //updateNow
-    } else {
-      //update on exit
-    }
+    window.api.updateApp(now);
+    setShowUpdateAlert(false);
+
   };
   const handleSelect = (id: Square) => {
     const squareInfo = chess.current.get(id);
@@ -439,7 +439,17 @@ function App(): JSX.Element {
       }
     }
   };
-
+  //update listener
+  useEffect(()=>{
+    const removeListener = window.api.onUpdateStatus((info)=>{
+      console.log(info)
+      if(info){
+        setCanUpdate(true);
+        setUpdateInfo(info)
+      }
+    })
+    return ()=> removeListener();
+  },[])
   //engine listener
   useEffect(() => {
     window.api.onEvalResults((data: EvalResults[]) => {
@@ -622,7 +632,6 @@ function App(): JSX.Element {
         result={gameInfo.result}
         squareSize={squareSize}
         canUpdate={canUpdate}
-        update={update}
         showUpdateAlert={setShowUpdateAlert}
         hideUpdate={()=>setCanUpdate(false)}
       />
@@ -683,7 +692,7 @@ function App(): JSX.Element {
           {showUpdateAlert && (
             <Alert
               title="Update Available"
-              body="Update to version xx.xx.xx is available. Would you like to install it?"
+              body={`Update to version ${updateInfo? updateInfo.version : ''} is available. Would you like to install it?`}
               onCancel={() => setShowUpdateAlert(false)}
               buttons={[
                 {text: 'Install Now', onClick: () => update(true), width:125, height: 50},

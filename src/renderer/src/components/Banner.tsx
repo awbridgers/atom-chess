@@ -13,7 +13,6 @@ type Props = {
   result: ResultType;
   squareSize: number;
   canUpdate: boolean;
-  update: (now: boolean)=>void;
   showUpdateAlert: React.Dispatch<React.SetStateAction<boolean>>
   hideUpdate: ()=>void;
 };
@@ -26,7 +25,6 @@ const Banner = ({
   whiteElo,
   blackElo,
   canUpdate,
-  update,
   showUpdateAlert,
   hideUpdate
 }: Props) => {
@@ -35,6 +33,7 @@ const Banner = ({
     setOpenMenu(false)
     hideUpdate();
   }
+  
   return (
     <Container $width={squareSize * 8 + 20 + 300}>
       <Spacer />

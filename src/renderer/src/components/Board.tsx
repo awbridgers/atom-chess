@@ -1,5 +1,5 @@
 import {Color, Move, PieceSymbol, Square} from 'chess.js';
-import {PieceInfo, ResultType} from 'src/types';
+import {PieceInfo} from 'src/types';
 import styled from 'styled-components';
 import {getPiece} from '@renderer/assets/util/getPiece';
 import Promote from './Promote';
@@ -223,19 +223,4 @@ const PromoScreen = styled.div`
   z-index: 5;
   background-color: #00000066;
 `;
-const GameInfo = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50px;
-`;
-const NamesContainer = styled.div`
-  font-size: 20px;
-  align-self: center;
-  overflow: hidden;
-  color: ${clr.text};
-  white-space: nowrap;
-  margin: auto;
-  text-align: center;
 
-`;

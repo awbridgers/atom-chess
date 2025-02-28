@@ -50,9 +50,9 @@ const MenuItem = styled.div<{$disabled?: boolean}>`
     background-color: ${(props) => (props.$disabled ? 'auto' : clr.selected)};
   }
 `;
-const Spacer = styled.div`
-  height: 30px;
-  background-color: rgba(0, 0, 0, 0);
-`;
+// const Spacer = styled.div`
+//   height: 30px;
+//   background-color: rgba(0, 0, 0, 0);
+// `;
 
 export default ContextMenu;
