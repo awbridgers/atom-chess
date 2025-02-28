@@ -13,13 +13,15 @@ export function getAutoUpdater(): AppUpdater {
   // Using destructuring to access autoUpdater due to the CommonJS module of 'electron-updater'.
   // It is a workaround for ESM compatibility issues, see https://github.com/electron-userland/electron-builder/issues/7976.
   const { autoUpdater } = electronUpdater;
-  log.info('Test')
-
+  //autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.logger = log;
-  autoUpdater.logger.info('Checking for update')
-  autoUpdater.checkForUpdatesAndNotify();
+  //autoUpdater.logger.info('Checking for update')
+  //autoUpdater.checkForUpdatesAndNotify();
   return autoUpdater;
 }
+
+const updater = getAutoUpdater();
 
 
 
@@ -51,6 +53,7 @@ function createWindow(): BrowserWindow {
       sandbox: false,
     },
   });
+  
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -74,9 +77,9 @@ function createWindow(): BrowserWindow {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', ()=>{
-  getAutoUpdater();
-})
+// app.on('ready', ()=>{
+//   console.log('test')
+// })
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
@@ -144,6 +147,21 @@ app.whenReady().then(() => {
     global.engine = sf;
   });
 
+  //set up the updater 
+    updater.checkForUpdates();
+    updater.on('checking-for-update',()=>{
+      updater.logger?.info('Checking for Update')
+    })
+    updater.on('update-available',(info)=>{
+      updater.logger?.info(`There is an update available (${info.version})`)
+      updater.downloadUpdate();
+      
+    })
+    updater.on('update-downloaded',(info)=>{
+      updater.logger?.info(`Update Ready (${info.version})`)
+      mainWindow.webContents.send('updateStatus', info)
+    })
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -162,6 +180,10 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+ipcMain.on('updateApp', (_,now:boolean)=>{
+  if(now) updater.quitAndInstall();
+  else updater.autoInstallOnAppQuit = true;
+})
 ipcMain.on('getEval', (_, pos: string, color: 'w' | 'b', depth: number) => {
   if (global.engineWorking) {
     global.nextPos = {pos, color, depth}
