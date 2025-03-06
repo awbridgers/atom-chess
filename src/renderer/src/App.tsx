@@ -770,7 +770,7 @@ const GameInfo = styled.div<{$height: number}>`
   justify-content: flex-start;
   background-color: blue;
   height: ${(props) => props.$height}px;
-  width: 300px;
+  width: 350px;
   position: relative;
 `;
 const BoardContainer = styled.div`
