@@ -141,6 +141,9 @@ const Line = styled.div`
   align-items: center;
   width: 100%;
   color: white;
+  &:last-child{
+    padding-bottom: 10px;
+  }
 `;
 const San = styled.div<{$highlighted: boolean}>`
   display: flex;
@@ -161,7 +164,7 @@ const HalfMove = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-self: stretch;
-  padding: 5px 0px;
+  /* padding: 5px 0px; */
   position: relative;
 `;
 const MoveNumber = styled.div`
@@ -176,11 +179,10 @@ const MoveNumber = styled.div`
   width: 8%;
 `;
 const Comment = styled.div`
-  font-size: 10px;
-  overflow: hidden;
-  max-height: 100px;
+  font-size: 12px;
   padding: 2px 5px;
   color: #FABD3A;
+
 `;
 
 const DeleteAlert = styled.div`

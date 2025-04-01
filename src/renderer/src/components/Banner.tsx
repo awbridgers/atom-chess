@@ -35,17 +35,18 @@ const Banner = ({
   }
   
   return (
-    <Container $width={squareSize * 8 + 20 + 300}>
+    <Container $width={squareSize * 8 + 20 + 350}>
       <Spacer />
       <NameContainer
         $width={squareSize * 8}
         $length={`${white}${black}`.length}
       >
-        <>
-          <Name>{white}</Name> ({whiteElo}){' '}
-          {result && <Result>{result}</Result>} <Name>{black}</Name> ({blackElo}
-          ){' '}
-        </>
+        <span>
+          <NameInfo><Name>{white}</Name> ({whiteElo})</NameInfo>
+          {result && <Result>{result}</Result>} 
+          <NameInfo><Name>{black}</Name> ({blackElo}</NameInfo>
+          )
+        </span>
       </NameContainer>
       <UpdateContainer>
       {canUpdate && (
@@ -81,6 +82,10 @@ const Name = styled.div`
   font-weight: bold;
   display: inline;
 `;
+const NameInfo = styled.div`
+  padding: 0px 2px;
+  display: inline;
+`
 const Result = styled.div`
   font-weight: bold;
   color: #fffc77;

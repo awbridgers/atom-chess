@@ -77,7 +77,6 @@ const GameList = ({list, open, close, deleteGame}: Props) => {
               <Header onClick={() => sortList('result')}>Result</Header>
             </tr>
           </thead>
-          <tr></tr>
           <tbody>
             {sortedList.map((game) => (
               <Row
